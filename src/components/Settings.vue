@@ -22,7 +22,10 @@
  */
  <template>
     <section class="controls">
-        <div class="input-wrapper">
+
+        <h2>Settings</h2>
+        
+        <!-- <div class="input-wrapper">
             <label for="inputWidth">Width</label>
             <input
                 id="inputWidth"
@@ -33,19 +36,21 @@
                 id="inputHeight"
                 v-model="internalValue.height"
             />
-        </div>
+        </div> -->
+        
         <div class="input-wrapper">
             <label for="inputAngle">Angle</label>
             <input
-                id="inputAngle"
-                v-model.number="internalValue.angle"
-            />
-            <input
-                id="inputAngle"
                 type="range"
                 min="0"
                 max="360"
                 step="1"
+                v-model.number="internalValue.angle"
+            />
+        </div>
+        <div class="input-wrapper input-wrapper--no-label">
+            <input
+                id="inputAngle"
                 v-model.number="internalValue.angle"
             />
         </div>
@@ -82,7 +87,7 @@
                 v-model.number="internalValue.upperThreshold"
             />
         </div>
-        <div class="input-wrapper">
+        <div class="input-wrapper input-wrapper--select">
             <label for="inputSortingType">Sorting type</label>
             <select
                 id="inputSortingType"
@@ -95,7 +100,7 @@
                 <option value="saturation">Saturation</option>
             </select>
         </div>
-        <div class="input-wrapper">
+        <div class="input-wrapper input-wrapper--select">
             <label for="inputIntervalFunction">Interval function</label>
             <select
                 id="inputIntervalFunction"
@@ -124,7 +129,10 @@
         </div>
     </section>
     <section class="footer">
-        <button @click="randomize()">Randomize!</button>
+        <button
+            @click="randomize()"
+            class="settings-button"
+        >Randomize!</button>
     </section>
  </template>
 
@@ -177,3 +185,69 @@ export default {
     },
 }
 </script>
+
+<style lang="scss" scoped>
+@import "@/styles/_variables";
+@import "@/styles/_mixins";
+
+$labelWidth: 125px;
+
+.input-wrapper {
+    display: flex;
+    justify-content: space-between;
+    padding: $spacing-small 0;
+    position: relative;
+
+    &--no-label input {
+        margin-left: $labelWidth;
+    }
+
+    label {
+        width: $labelWidth;
+    }
+
+    input,
+    select {
+        flex: 1;
+    }
+
+    &--select {
+        &::before,
+        &::after {
+            --size: 0.3rem;
+            content: "";
+            position: absolute;
+            right: 1rem;
+            pointer-events: none;
+        }
+
+        &::after {
+            border-left: var(--size) solid transparent;
+            border-right: var(--size) solid transparent;
+            border-top: var(--size) solid black;
+            top: 55%;
+        }
+
+        &::before {
+            border-left: var(--size) solid transparent;
+            border-right: var(--size) solid transparent;
+            border-bottom: var(--size) solid black;
+            top: 40%;
+        }
+
+        select {
+            appearance: none;
+            padding: $spacing-small $spacing-medium;
+            background-color: #fff;
+            border: 1px solid #caced1;
+            border-radius: $spacing-small;
+            color: #000;
+            cursor: pointer;
+        }
+    }
+}
+
+.settings-button {
+    @include button();
+}
+</style>

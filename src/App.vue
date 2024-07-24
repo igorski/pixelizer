@@ -21,50 +21,63 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 <template>
-    <header class="app-header">
-        <h1>Pixelizer</h1>
-        <section class="file-manager">
-            <button
-                type="button"
-                @click="openFileSelector( $event )"
-            >Select file</button>
-            <input
-                type="file"
-                ref="fileInput"
-                accept="image/png,image/gif,image/jpeg"
-                style="display: none;"
-                @change="handleImageSelect( $event )"
-            />
-        </section>
-    </header>
     <section class="app-ui">
+        <header class="app-ui__header">
+            <h1>Pixelizer</h1>
+            <section class="file-manager">
+                <button
+                    type="button"
+                    class="select-button"
+                    @click="openFileSelector()"
+                >Select file</button>
+                <input
+                    type="file"
+                    ref="fileInput"
+                    accept="image/png,image/gif,image/jpeg"
+                    style="display: none;"
+                    @change="handleImageSelect( $event )"
+                />
+            </section>
+        </header>
         <div ref="canvasWrapper" class="app-ui__canvas-wrapper">
             <div
                 ref="canvasContainer"
                 class="app-ui__canvas"
-            ></div>
-        </div>
-        <div class="app-ui__settings">
-            <Settings
-                v-model="settings"
-            />
+            >
+                <div
+                    v-if="!hasImage"
+                    class="app-ui__image-placeholder"
+                    @click="openFileSelector()"
+                >Select a file or drag an image into this window</div>
+            </div>
         </div>
     </section>
+    <div class="app-ui__settings">
+        <Settings
+            v-model="settings"
+        />
+    </div>
 </template>
 
 <script lang="ts">
+import debounce from "lodash.debounce";
 import { Loader } from "zcanvas";
 import Settings from "@/components/Settings.vue";
-import type { PixelCanvas } from "@/definitions/types";
+import type { PixelCanvas, SortSettings } from "@/definitions/types";
 import { pixelsort } from "@/filters/pixel-sorter";
 import { IntervalFunction } from "@/filters/sorter/interval";
 import { SortingType } from "@/filters/sorter/sorting";
 import { resizeImage } from "@/utils/canvas";
+import { handleFileDrag, handleFileDrop } from "@/utils/file";
 import { constrainAspectRatio } from "@/utils/math";
 
+const MAX_IMAGE_SIZE = 1000;
+
+let loadedImage: PixelCanvas | undefined;
 let resizedImage: PixelCanvas | undefined;
 let canvas: HTMLCanvasElement | undefined;
-let rafPending = false;
+let lastWidth = 0;
+let lastHeight = 0;
 
 export default {
     components: {
@@ -82,32 +95,36 @@ export default {
             sortingType: SortingType.LIGHTNESS,
             intervalFunction: IntervalFunction.THRESHOLD,
         },
+        hasImage: false,
     }),
     watch: {
         settings: {
             deep: true,
-            handler(): void {
-                if ( rafPending ) {
-                    return; // a filter render request is already pending
+            handler( data: SortSettings ): void {
+                if ( data.width !== lastWidth || data.height !== lastHeight ) {
+                    this.debouncedResize();
+                } else {
+                    this.debouncedFilter();
                 }
-                rafPending = true;
-                window.requestAnimationFrame(() => {
-                    this.runFilter();
-                    rafPending = false;
-                });
             }
         }
     },
     mounted(): void {
-        const availableBounds = this.$refs.canvasWrapper.getBoundingClientRect();
+        // no need to remove the listeners below as we will require these throughout the application lifetime
+        window.addEventListener( "resize", this.handleResize.bind( this ));
+        window.addEventListener( "dragover", handleFileDrag, false );
+        window.addEventListener( "drop", event => {
+            const file = handleFileDrop( event );
+            file && this.loadFile( file );
+        }, false );
+        
+        this.handleResize();
 
-        const value = Math.floor( Math.min( availableBounds.width, availableBounds.height ));
-
-        this.$data.settings.width  = value;
-        this.$data.settings.height = value;
+        this.debouncedResize = debounce( this.resizeSource.bind( this ), 16 );
+        this.debouncedFilter = debounce( this.runFilter.bind( this ), 16 );
     },
     methods: {
-        openFileSelector( event: Event ): void {
+        openFileSelector(): void {
             // this is just some hackaroni to trigger the file selector from the
             // hidden file input. File inputs look uglier than buttons...
             const simulatedEvent = document.createEvent( "MouseEvent" );
@@ -118,15 +135,28 @@ export default {
             );
             this.$refs.fileInput.dispatchEvent( simulatedEvent );
         },
-        async handleImageSelect( event: Event ): Promise<void> {
-            const files = event.target!.files;
+        handleImageSelect( event: Event ): void {
+            const files = ( event.target as HTMLInputElement )!.files;
             if ( !files || files.length === 0 ) {
                 return;
             }
             const [ file ] = files;
-            const loadedImage = await Loader.loadImage( file );
+            this.loadFile( file );
+        },
+        async loadFile( file: File ): Promise<void> {
+            loadedImage = await Loader.loadImage( file );
 
+            this.hasImage = true;
+            this.resizeSource();
+        },
+        resizeSource(): void {
+            if ( !loadedImage ) {
+                return;
+            }
             const { width, height } = this.$data.settings;
+
+            lastWidth  = width;
+            lastHeight = height;
             
             // resize image (maintaining its aspect ratio) to desired width and height
             const size = constrainAspectRatio( width, height, loadedImage.size.width, loadedImage.size.height );
@@ -157,61 +187,88 @@ export default {
             }
             this.$refs.canvasContainer.appendChild( canvas );
         },
+        handleResize(): void {
+            const availableBounds = this.$refs.canvasWrapper.getBoundingClientRect();
+
+            const scaledValue = Math.min( MAX_IMAGE_SIZE, Math.floor(( availableBounds.height * 0.9 ) / 100 ) * 100 );
+
+            this.$data.settings.width  = scaledValue;
+            this.$data.settings.height = scaledValue;
+        },
     },
 };
 </script>
 
 <style lang="scss">
-html, body {
-    overscroll-behavior-x: none; /* disable navigation back/forward swipe on Chrome */
+// set global styles (typography, page layout, etc.)
+// beyond this point all styling should be scoped
+@import "@/styles/_global";
+
+#app {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: $color-2;
     height: 100%;
 }
 
-body {
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background-color: #333;
-    color: #b6b6b6;
+.app-ui__canvas canvas {
+    box-shadow: 0 8px 8px rgba(0,0,0,.5);
 }
+</style>
 
-#app {
-    display: flex;
-    min-height: 100%;
-    flex-direction: column;
-    justify-content: space-around;
-}
+<style lang="scss">
+@import "@/styles/_mixins";
+
+$sideBarWidth: 360px;
 
 .app-ui {
-    flex: 1;
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
+    width: calc( 100% - $sideBarWidth );
+    min-height: 100%;
+
+    &__header {
+        padding: $spacing-small $spacing-medium;
+        box-sizing: border-box;
+        width: 100%;
+    }
 
     &__canvas-wrapper {
-        flex: 0.7;
+        flex: 1;
         display: flex;
         justify-content: space-around;
         align-items: center;
         flex-direction: row;
-    }
-
-    &__canvas {
-        canvas {
-            box-shadow: 0 8px 8px rgba(0,0,0,.5);
-            vertical-align: middle;
-        }
+        overflow: hidden;
     }
 
     &__settings {
-        flex: 0.3;
-        height: inherit;
-        border-left: 2px solid blue;
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: $sideBarWidth;
+        height: 100%;
+        border-left: 4px solid $color-4;
         box-sizing: border-box;
-        padding: 16px;
+        padding: $spacing-medium $spacing-large;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        background-color: #333;
     }
+
+    &__image-placeholder {
+        cursor: pointer;
+        border-radius: $spacing-xlarge;
+        padding: $spacing-xlarge;
+        border: 3px solid #b6b6b6;
+        font-size: 1.25em;
+        user-select: none;
+    }
+}
+
+.select-button {
+    @include button();
 }
 </style>
