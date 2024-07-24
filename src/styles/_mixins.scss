@@ -1,0 +1,91 @@
+@import "_variables";
+@import "_colors";
+
+/* responsiveness mixins */
+
+// phones
+@mixin mobile {
+    @media (max-width: #{$mobile-width}) {
+        @content;
+    }
+}
+
+// anything above phone resolution (e.g. tablet/laptop/desktop)
+@mixin large {
+    @media (min-width: #{$mobile-width}) {
+        @content;
+    }
+}
+
+// everything matching the ideal dimensions for the component
+@mixin componentIdeal( $width, $height ) {
+    @media screen and ( min-width: $width ) and ( min-height: $height ) {
+        @content;
+    }
+}
+// everything below the ideal dimensions for the component
+@mixin componentFallback( $width, $height ) {
+    @media screen and ( max-width: $width ), ( max-height: $height ) {
+        @content;
+    }
+}
+
+// components (such as modal windows) that have an ideal width x height size
+// can specify styles at the cutoff points using the following mixins:
+
+// everything matching the ideal width for the component
+@mixin minWidth( $width ) {
+    @media screen and ( min-width: $width ) {
+        @content;
+    }
+}
+
+// everything below the ideal width for the component
+@mixin minWidthFallback( $width ) {
+    @media screen and ( max-width: $width ) {
+        @content;
+    }
+}
+
+// everything matching the ideal width for the component
+@mixin minHeight( $height ) {
+    @media screen and ( min-height: $height ) {
+        @content;
+    }
+}
+
+// everything below the ideal width for the component
+@mixin minHeightFallback( $height ) {
+    @media screen and ( max-height: $height ) {
+        @content;
+    }
+}
+
+/* generic styles */
+
+@mixin truncate() {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@mixin verticalScrollOnMobile() {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden; /* we should never want this in modal windows */
+}
+
+@mixin button() {
+    cursor: pointer;
+    padding: $spacing-small $spacing-medium;
+    border-radius: $spacing-medium;
+    background-color: $color-4;
+    border: 3px solid $color-2;
+    color: #FFF;
+    font-weight: bold;
+    user-select: none;
+
+    &:hover {
+        background-color: $color-1;
+    }
+}

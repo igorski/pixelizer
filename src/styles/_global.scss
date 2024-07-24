@@ -1,0 +1,13 @@
+@import "_colors";
+@import "typography";
+
+html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior-x: none; /* disable navigation back/forward swipe on Chrome */
+}
+
+body {
+    color: #b6b6b6;
+}
