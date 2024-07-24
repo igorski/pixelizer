@@ -1,4 +1,26 @@
-import type { Size } from "@/definitions/types";
+/**
+ * The MIT License (MIT)
+ *
+ * Igor Zinken 2024 - https://www.igorski.nl
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+import type { Size } from "zcanvas";
 import type { PixelCanvas, Pixel } from "@/definitions/types";
 
 export const createCanvas = ( width: number, height: number ): PixelCanvas => {
@@ -8,7 +30,7 @@ export const createCanvas = ( width: number, height: number ): PixelCanvas => {
 
     return {
         canvas,
-        context: canvas.getContext( "2d" ),
+        context: canvas.getContext( "2d", { willReadFrequently: true }),
         width,
         height
     };
@@ -22,12 +44,23 @@ export const cloneCanvas = ( canvas: PixelCanvas ): PixelCanvas => {
     return output;
 };
 
+export const cropCanvas = ( canvas: PixelCanvas, width: number, height: number ): PixelCanvas => {
+    const output = createCanvas( width, height );
+
+    const deltaX = canvas.width  / 2 - width / 2;
+    const deltaY = canvas.height / 2 - height / 2;
+
+    output.context.drawImage( canvas.canvas, deltaX, deltaY, width, height, 0, 0, width, height );
+
+    return output;
+};
+
 export const rotateCanvas = ( canvas: PixelCanvas, angle: number ): PixelCanvas => {
     const { width, height } = canvas;
     const angleRad = angle * ( Math.PI / 180 );
 
     const rotatedCanvas  = document.createElement( "canvas" );
-    const rotatedContext = rotatedCanvas.getContext( "2d" )!;
+    const rotatedContext = rotatedCanvas.getContext( "2d", { willReadFrequently: true })!;
 
     const rotatedWidth  = Math.round( Math.abs( width  * Math.cos( angleRad )) + Math.abs( height * Math.sin( angleRad )));
     const rotatedHeight = Math.round( Math.abs( height * Math.cos( angleRad )) + Math.abs( width  * Math.sin( angleRad )));
@@ -56,30 +89,13 @@ export const imageToCanvas = ( image: { size: Size, image: HTMLImageElement } ):
     return canvas;
 };
 
-export const convertTo1Bit = ( canvas: PixelCanvas, threshold = 127 ): PixelCanvas => {
-    const { width, height } = canvas;
+export const resizeImage = ( image: HTMLImageElement | HTMLCanvasElement | ImageBitmap, width?: number, height?: number ): PixelCanvas => {
+    width  = width  ?? image.width;
+    height = height ?? image.height;
 
-    const output = cloneCanvas( canvas );
+    const output = createCanvas( width, height );
 
-    const idata = output.context.getImageData( 0, 0, width, height );
-    const buffer = idata.data;
-    const length = buffer.length;
-
-    for ( let i = 0; i < length; i += 4 ) {
-        // get approx. luma value from RGB
-        let luma = buffer[ i ] * 0.3 + buffer[ i + 1 ] * 0.59 + buffer[ i + 2 ] * 0.11;
-
-        // test against some threshold
-        luma = luma < threshold ? 0 : 255;
-
-        // write result back to all components
-        buffer[ i ] = luma;
-        buffer[ i + 1 ] = luma;
-        buffer[ i + 2 ] = luma;
-    }
-
-    // update canvas with the resulting bitmap data
-    output.context.putImageData( idata, 0, 0 );
+    output.context.drawImage( image, 0, 0, width, height );
 
     return output;
 };

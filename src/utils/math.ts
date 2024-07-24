@@ -20,14 +20,25 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-export const randomFloat = ( min: number, max: number ): number => {
-    return Math.random() * ( max - min ) + min;
-};
+import type { Size } from "zcanvas";
 
-export const randInt = ( min: number, max: number ): number => {
-    return Math.round( randomFloat( min, max ));
-};
+/**
+ * when stretching, the non-dominant side of the preferred rectangle will scale to reflect the
+ * ratio of the available space, while the dominant side remains at its current size.
+ */
+export function constrainAspectRatio( idealWidth: number, idealHeight: number, originalWidth: number, originalHeight: number ): Size {
+    const idealAspectRatio  = idealWidth / idealHeight;
+    const screenAspectRatio = originalWidth / originalHeight;
 
-export function randomFromList<T extends Array<any>>( list: T ): T {
-    return list[ randInt( 0, list.length - 1 )];
+    let width  = idealWidth;
+    let height = idealHeight;
+
+    if ( idealAspectRatio > screenAspectRatio ) {
+        // the ideal is landscape oriented
+        height = idealWidth / screenAspectRatio;
+    } else {
+        // the ideal is portrait or square oriented
+        width = idealHeight * screenAspectRatio;
+    }
+    return { width, height };
 }

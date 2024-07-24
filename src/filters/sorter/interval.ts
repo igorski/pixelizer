@@ -1,7 +1,33 @@
-import { CoordinateList, PixelCanvas } from "@/definitions/types";
-import { getPixel } from "./canvas";
-import { lightness } from "./sorting";
-import { randInt } from "./random";
+/**
+ * The MIT License (MIT)
+ *
+ * Igor Zinken 2024 - https://www.igorski.nl
+ * Satyarth Mishra Sharma - https://github.com/satyarth/pixelsort
+ * Kim Asendorf - https://github.com/kimasendorf/ASDFPixelSort 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+import { PixelCanvas } from "@/definitions/types";
+import { lightness } from "@/filters/sorter/sorting";
+import { getPixel } from "@/utils/canvas";
+import { randInt } from "@/utils/random";
+
+export type IntervalList = number[][]; // first dimension is y-coordinate, second dimension is x-coordinate
 
 export enum IntervalFunction {
     RANDOM = "random",
@@ -19,7 +45,7 @@ interface IntervalProps {
     intervalImage?: PixelCanvas;
 }
 
-export const getIntervals = ( fn: IntervalFunction, props: IntervalProps ): CoordinateList => {
+export const getIntervals = ( fn: IntervalFunction, props: IntervalProps ): IntervalList => {
     switch ( fn ) {
         default:
             return none( props );
@@ -35,9 +61,9 @@ export const getIntervals = ( fn: IntervalFunction, props: IntervalProps ): Coor
 };
 
 /*
-function edge({ image, lowerThreshold }: IntervalProps ): CoordinateList {
+function edge({ image, lowerThreshold }: IntervalProps ): IntervalList {
     const edgeData = image.filter(ImageFilter.FIND_EDGES).convert('RGBA').load()
-    const intervals: CoordinateList = [];
+    const intervals: IntervalList = [];
 
     const { width, height } = image;
 
@@ -57,9 +83,9 @@ function edge({ image, lowerThreshold }: IntervalProps ): CoordinateList {
     return intervals;
 }*/
 
-function random({ image, charLength }: IntervalProps ): CoordinateList {
+function random({ image, charLength }: IntervalProps ): IntervalList {
     const { width, height } = image;
-    const intervals: CoordinateList = [];
+    const intervals: IntervalList = [];
 
     for ( let y = 0; y < height; ++ y ) {
         intervals.push( [] );
@@ -76,9 +102,9 @@ function random({ image, charLength }: IntervalProps ): CoordinateList {
     return intervals;
 }
 
-function threshold({ image, lowerThreshold, upperThreshold }: IntervalProps ): CoordinateList {
+function threshold({ image, lowerThreshold, upperThreshold }: IntervalProps ): IntervalList {
     const { width, height } = image;
-    const intervals: CoordinateList = [];
+    const intervals: IntervalList = [];
     const imageData = image.context.getImageData( 0, 0, width, height );
 
     for ( let y = 0; y < height; ++y ) {
@@ -93,8 +119,8 @@ function threshold({ image, lowerThreshold, upperThreshold }: IntervalProps ): C
     return intervals;
 }
 
-function waves({ image, charLength }: IntervalProps ): CoordinateList {
-    const intervals: CoordinateList = [];
+function waves({ image, charLength }: IntervalProps ): IntervalList {
+    const intervals: IntervalList = [];
     const { width, height } = image;
 
     for ( let y = 0; y < height; ++y ) {
@@ -112,6 +138,6 @@ function waves({ image, charLength }: IntervalProps ): CoordinateList {
     return intervals;
 }
 
-function none({ image }: IntervalProps ): CoordinateList {
+function none({ image }: IntervalProps ): IntervalList {
     return new Array( image.height ).fill( [] );
 }

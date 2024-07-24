@@ -21,39 +21,90 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 <template>
-    <h1>Pixelizer</h1>
-    <button type="button" @click="openFileSelector( $event )">Select file</button>
-    <input type="file" id="file"
-        ref="fileInput"
-        accept="image/png,image/gif,image/jpeg"
-        style="display: none;"
-        @change="handleImageSelect"
-    />
-    <div ref="canvasContainer" class="canvas-container"></div>
+    <header class="app-header">
+        <h1>Pixelizer</h1>
+        <section class="file-manager">
+            <button
+                type="button"
+                @click="openFileSelector( $event )"
+            >Select file</button>
+            <input
+                type="file"
+                ref="fileInput"
+                accept="image/png,image/gif,image/jpeg"
+                style="display: none;"
+                @change="handleImageSelect( $event )"
+            />
+        </section>
+    </header>
+    <section class="app-ui">
+        <div ref="canvasWrapper" class="app-ui__canvas-wrapper">
+            <div
+                ref="canvasContainer"
+                class="app-ui__canvas"
+            ></div>
+        </div>
+        <div class="app-ui__settings">
+            <Settings
+                v-model="settings"
+            />
+        </div>
+    </section>
 </template>
 
 <script lang="ts">
 import { Loader } from "zcanvas";
-import { imageToCanvas } from "./utils/canvas";
-import { pixelsort } from "./utils/main";
+import Settings from "@/components/Settings.vue";
+import type { PixelCanvas } from "@/definitions/types";
+import { pixelsort } from "@/filters/pixel-sorter";
+import { IntervalFunction } from "@/filters/sorter/interval";
+import { SortingType } from "@/filters/sorter/sorting";
+import { resizeImage } from "@/utils/canvas";
+import { constrainAspectRatio } from "@/utils/math";
+
+let resizedImage: PixelCanvas | undefined;
+let canvas: HTMLCanvasElement | undefined;
+let rafPending = false;
 
 export default {
     components: {
+        Settings,
     },
     data: () => ({
-        interval_function: "threshold",
-        lower_threshold: 0.25,
-        upper_threshold: 0.8,
-        char_length: 50,
-        angle: 0,
-        randomness: 0,
-        sorting_function: "lightness",
+        settings: {
+            width: 400,
+            height: 400,
+            angle: 0,
+            randomness: 0,
+            charLength: 0.5,
+            lowerThreshold: 0.25,
+            upperThreshold: 0.8,
+            sortingType: SortingType.LIGHTNESS,
+            intervalFunction: IntervalFunction.THRESHOLD,
+        },
     }),
-    computed: {
-       
+    watch: {
+        settings: {
+            deep: true,
+            handler(): void {
+                if ( rafPending ) {
+                    return; // a filter render request is already pending
+                }
+                rafPending = true;
+                window.requestAnimationFrame(() => {
+                    this.runFilter();
+                    rafPending = false;
+                });
+            }
+        }
     },
-    async mounted(): Promise<void> {
+    mounted(): void {
+        const availableBounds = this.$refs.canvasWrapper.getBoundingClientRect();
 
+        const value = Math.floor( Math.min( availableBounds.width, availableBounds.height ));
+
+        this.$data.settings.width  = value;
+        this.$data.settings.height = value;
     },
     methods: {
         openFileSelector( event: Event ): void {
@@ -68,22 +119,44 @@ export default {
             this.$refs.fileInput.dispatchEvent( simulatedEvent );
         },
         async handleImageSelect( event: Event ): Promise<void> {
-            const files = event.target.files;
+            const files = event.target!.files;
             if ( !files || files.length === 0 ) {
                 return;
             }
             const [ file ] = files;
-            const sizedImage = await Loader.loadImage( file );
+            const loadedImage = await Loader.loadImage( file );
 
-            const canvas = pixelsort({
-                image: imageToCanvas( sizedImage ),
-                angle: 0,
-                // randomness: 50,
-                // sortingFunction: "saturation",
-                // intervalFunction: "threshold"
-            });
-            this.$refs.canvasContainer.appendChild( canvas.canvas );
-        }
+            const { width, height } = this.$data.settings;
+            
+            // resize image (maintaining its aspect ratio) to desired width and height
+            const size = constrainAspectRatio( width, height, loadedImage.size.width, loadedImage.size.height );
+            resizedImage = resizeImage( loadedImage.image, size.width, size.height );
+
+            this.runFilter();
+        },
+        runFilter(): void {
+            if ( resizedImage === undefined ) {
+                return;
+            }
+            const { width, height, ...settings } = this.$data.settings;
+
+            if ( canvas?.parentNode ) {
+                this.$refs.canvasContainer.removeChild( canvas );
+            }
+            try {
+                ({ canvas } = pixelsort({
+                    image: resizedImage,
+                    ...settings,
+                }));
+            } catch ( e ) {
+                if ( this.$data.settings.angle === 0 ) {
+                    this.$data.settings.angle = 90;
+                    return this.runFilter();
+                }
+                console.error( `Irrecoverable error occurred during sorting: ${e.message}` );
+            }
+            this.$refs.canvasContainer.appendChild( canvas );
+        },
     },
 };
 </script>
@@ -91,11 +164,11 @@ export default {
 <style lang="scss">
 html, body {
     overscroll-behavior-x: none; /* disable navigation back/forward swipe on Chrome */
+    height: 100%;
 }
 
 body {
     width: 100%;
-    height: 100%;
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -103,9 +176,42 @@ body {
     color: #b6b6b6;
 }
 
-.canvas-container {
-    canvas {
-        height: 400px;
+#app {
+    display: flex;
+    min-height: 100%;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.app-ui {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+
+    &__canvas-wrapper {
+        flex: 0.7;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        flex-direction: row;
+    }
+
+    &__canvas {
+        canvas {
+            box-shadow: 0 8px 8px rgba(0,0,0,.5);
+            vertical-align: middle;
+        }
+    }
+
+    &__settings {
+        flex: 0.3;
+        height: inherit;
+        border-left: 2px solid blue;
+        box-sizing: border-box;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
 }
 </style>

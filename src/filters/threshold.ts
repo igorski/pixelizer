@@ -20,14 +20,36 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-export const randomFloat = ( min: number, max: number ): number => {
-    return Math.random() * ( max - min ) + min;
-};
+import type { PixelCanvas } from "@/definitions/types";
+import { cloneCanvas } from "@/utils/canvas";
 
-export const randInt = ( min: number, max: number ): number => {
-    return Math.round( randomFloat( min, max ));
-};
+/**
+ * Creates a 1-bit (black and white) representation of given canvas.
+ * Threshold is an 8-bit value between 0 - 255
+ */
+export const applyThreshold = ( canvas: PixelCanvas, threshold = 127 ): PixelCanvas => {
+    const { width, height } = canvas;
 
-export function randomFromList<T extends Array<any>>( list: T ): T {
-    return list[ randInt( 0, list.length - 1 )];
-}
+    threshold = Math.max( 0, Math.min( 255, threshold ));
+
+    const output = cloneCanvas( canvas );
+
+    const imageData = output.context.getImageData( 0, 0, width, height );
+    const { data } = imageData;
+
+    for ( let i = 0, l = data.length; i < l; i += 4 ) {
+        if ( data[ i + 3 ] === 0 ) {
+            continue; // pixel is transparent
+        }
+        let luma = data[ i ] * 0.3 + data[ i + 1 ] * 0.59 + data[ i + 2 ] * 0.11;
+
+        luma = luma < threshold ? 0 : 255;
+
+        data[ i ] = luma;
+        data[ i + 1 ] = luma;
+        data[ i + 2 ] = luma;
+    }
+    output.context.putImageData( imageData, 0, 0 );
+
+    return output;
+};
