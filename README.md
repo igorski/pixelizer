@@ -12,10 +12,9 @@ a [Processing script](https://github.com/kimasendorf/ASDFPixelSort) by Kim Asend
  * Cache rotated image on repeated invocations
  * Group settings field by function
  * Include "Edges" algorithm
- * Create save button
  * Add mask support
  * Mobile view
- * Create save current state fn to keep filtering new passes
+ * Create save current state fn to keep filtering new passes over affected image
 
 ## Project setup
 

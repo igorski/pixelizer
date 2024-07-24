@@ -30,6 +30,12 @@
                     class="select-button"
                     @click="openFileSelector()"
                 >Select file</button>
+                <button
+                    v-if="hasImage"
+                    type="button"
+                    class="download-button"
+                    @click="downloadImage()"
+                >Download</button>
                 <input
                     type="file"
                     ref="fileInput"
@@ -195,6 +201,13 @@ export default {
             this.$data.settings.width  = scaledValue;
             this.$data.settings.height = scaledValue;
         },
+        downloadImage(): void {
+            const snapshot = canvas!.toDataURL( "image/png" );
+            const downloadLink = document.createElement( "a" );
+            downloadLink.setAttribute( "download", "generated.png" );
+            downloadLink.setAttribute( "href", snapshot.replace(/^data:image\/png/, "data:application/octet-stream" ));
+            downloadLink.click();
+        },
     },
 };
 </script>
@@ -270,5 +283,14 @@ $sideBarWidth: 360px;
 
 .select-button {
     @include button();
+}
+
+.download-button {
+    @include button();
+    background-color: $color-1;
+
+    &:hover {
+        background-color: $color-4;
+    }
 }
 </style>
