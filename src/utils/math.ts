@@ -26,19 +26,25 @@ import type { Size } from "zcanvas";
  * when stretching, the non-dominant side of the preferred rectangle will scale to reflect the
  * ratio of the available space, while the dominant side remains at its current size.
  */
-export function constrainAspectRatio( idealWidth: number, idealHeight: number, originalWidth: number, originalHeight: number ): Size {
-    const idealAspectRatio  = idealWidth / idealHeight;
-    const screenAspectRatio = originalWidth / originalHeight;
+export function constrainAspectRatio( containerWidth: number, containerHeight: number, imageWidth: number, imageHeight: number ): Size {
+    const imageAspectRatio     = imageWidth / imageHeight;
+    const containerAspectRatio = containerWidth / containerHeight;
 
-    let width  = idealWidth;
-    let height = idealHeight;
+    let newWidth;
+    let newHeight;
 
-    if ( idealAspectRatio > screenAspectRatio ) {
-        // the ideal is landscape oriented
-        height = idealWidth / screenAspectRatio;
+    if ( imageAspectRatio > containerAspectRatio ) {
+        // Image is wider relative to its height than the container
+        newWidth  = containerWidth;
+        newHeight = containerWidth / imageAspectRatio;
     } else {
-        // the ideal is portrait or square oriented
-        width = idealHeight * screenAspectRatio;
+        // Image is taller relative to its width or perfectly proportional
+        newHeight = containerHeight;
+        newWidth  = containerHeight * imageAspectRatio;
     }
-    return { width, height };
+
+    return {
+        width: newWidth,
+        height: newHeight
+    };
 }

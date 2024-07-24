@@ -23,14 +23,34 @@
 import type { Size } from "zcanvas";
 import type { PixelCanvas, Pixel } from "@/definitions/types";
 
-export const createCanvas = ( width: number, height: number ): PixelCanvas => {
+export const createCanvas = ( width: number, height: number, crisp = false ): PixelCanvas => {
     const canvas  = document.createElement( "canvas" );
     canvas.width  = width;
     canvas.height = height;
 
+    const context = canvas.getContext( "2d", { willReadFrequently: true });
+
+    if ( crisp ) {
+        [ "-moz-crisp-edges", "-webkit-crisp-edges", "pixelated", "crisp-edges" ]
+        .forEach( style => {
+            // @ts-expect-error TS7015: Element implicitly has an 'any' type because index expression is not of type 'number'.
+            canvas.style[ "image-rendering" ] = style;
+        });
+
+        const props = [
+            "imageSmoothingEnabled",  "mozImageSmoothingEnabled",
+            "oImageSmoothingEnabled", "webkitImageSmoothingEnabled"
+        ];
+        
+        props.forEach( prop => {
+            // @ts-expect-error TS7053 expression of type 'string' can't be used to index type CanvasRenderingContext2D
+            if ( context[ prop ] !== undefined ) context[ prop ] = true;
+        });
+    }
+
     return {
         canvas,
-        context: canvas.getContext( "2d", { willReadFrequently: true }),
+        context,
         width,
         height
     };
