@@ -107,11 +107,14 @@ function threshold({ image, lowerThreshold, upperThreshold }: IntervalProps ): I
     const intervals: IntervalList = [];
     const imageData = image.context.getImageData( 0, 0, width, height );
 
+    const lt = lowerThreshold * 255;
+    const ut = upperThreshold * 255;
+
     for ( let y = 0; y < height; ++y ) {
         intervals.push( [] );
         for ( let x = 0; x < width; ++x ) {
             const level = lightness( getPixel( imageData, x, y ));
-            if ( level < lowerThreshold * 255 || level > upperThreshold * 255 ) {
+            if ( level < lt || level > ut ) {
                 intervals[ y ].push( x );
             }
         }

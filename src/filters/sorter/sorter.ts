@@ -44,13 +44,15 @@ export const sortImage = ({ size, imageData, maskData, intervals, randomness, so
 
     for ( let y = 0; y < height; ++y ) {
         let row: PixelList = [];
-        let x_min = 0;
+        let minX = 0;
+
+        const intervalRow = [ ...intervals[ y ], width ];
         
-        for ( const x_max of [...intervals[ y ], width ]) {
+        for ( const maxX of intervalRow ) {
             const interval: PixelList = [];
 
             if ( maskData ) {
-                for ( let x = x_min; x < x_max; ++x ) {
+                for ( let x = minX; x < maxX; ++x ) {
                     if ( getPixel( maskData, x, y )) {
                         interval.push( getPixel( imageData, x, y )! );
                     }
@@ -62,7 +64,7 @@ export const sortImage = ({ size, imageData, maskData, intervals, randomness, so
             } else {
                 row = row.concat( sortInterval( interval, sortingFunction ));
             }
-            x_min = x_max;
+            minX = maxX;
         }
         sortedPixels.push( row );
     }

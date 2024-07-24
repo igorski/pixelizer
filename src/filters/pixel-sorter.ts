@@ -116,7 +116,7 @@ export const pixelsort = ({ image, maskImage, intervalImage, randomness = 0, cha
 function placePixels( pixels: PixelList[], original: ImageData, size: Size, mask?: ImageData ): PixelCanvas {
     const { width, height } = size;
 
-    const output = createCanvas( width, height );
+    const output = createCanvas( width, height, true );
     const outputdata = output.context.getImageData( 0, 0, width, height );
 
     for ( let y = 0; y < height; ++y ) {
