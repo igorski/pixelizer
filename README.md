@@ -12,7 +12,8 @@ least for the time being.
 
 ## TODO
 
- * Create undo / redo
+ * Downloading image should multiply for device pixel ratio
+ * Filters do not work full width of on landscape images when angle is at exactly 90 degrees
  * Settings should be able to be serialized into a string (to append to filename on download)
  * Include "Edges" algorithm
  * Add loading of mask support
@@ -36,6 +37,12 @@ Creating a production build (build output will reside in _./dist/_-folder):
 
 ```
 npm run build
+```
+
+Running unit tests
+
+```
+npm run test
 ```
 
 Running TypeScript validation:

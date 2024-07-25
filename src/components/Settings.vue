@@ -21,9 +21,26 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
  <template>
-    <section class="controls">
-
-        <h2>Settings</h2>
+    <section class="settings">
+        <div class="settings__header">
+            <h2>Settings</h2>
+            <div class="settings__history">
+                <button
+                    :title="$t('settings.undo')"
+                    :disabled="!canUndo"
+                    class="settings__history__button"
+                    v-tooltip="$t('settings.description.undo')"
+                    @click="handleUndo()"
+                >&#8617;</button>
+                <button
+                    :title="$t('settings.redo')"
+                    :disabled="!canRedo"
+                    class="settings__history__button"
+                    v-tooltip="$t('settings.description.redo')"
+                    @click="handleRedo()"
+                >&#8618;</button>
+            </div>
+        </div>
         
         <!-- <div class="input-wrapper">
             <label for="inputWidth">Width</label>
@@ -141,7 +158,11 @@
             v-if="supportsCharLength"
             class="input-wrapper"
         >
-            <label for="inputCharLength">Char length </label>
+            <label
+                for="inputCharLength"
+                v-t="'settings.charLength'"
+                v-tooltip.left="$t('settings.description.charLength')"
+            ></label>
             <input
                 id="inputCharLength"
                 type="range"
@@ -170,10 +191,12 @@
  </template>
 
 <script lang="ts">
+import { mapState, mapActions } from "pinia";
 import { PropType } from "vue";
 import type { SortSettings } from "@/definitions/types";
 import { SortingType } from "@/filters/sorter/sorting";
 import { IntervalFunction } from "@/filters/sorter/interval";
+import { useHistoryStore } from "@/store/history";
 import { randomFromList } from "@/utils/random";
 
 const SORTING_TYPES = [ SortingType.HUE, SortingType.INTENSITY, SortingType.LIGHTNESS, SortingType.MINIMUM, SortingType.SATURATION ];
@@ -199,8 +222,12 @@ export default {
             default: false,
         },
     },
-    emits: [ "update:modelValue", "save" ],
+    emits: [ "update:modelValue", "restore", "save" ],
     computed: {
+        ...mapState( useHistoryStore, [
+            "canUndo",
+            "canRedo",
+        ]),
         internalValue: {
             get(): SortSettings {
                 return this.modelValue;
@@ -232,7 +259,28 @@ export default {
             }
         },
     },
+    mounted(): void {
+        // no need to clean up as this component is active for the applications total lifecycle
+        document.addEventListener( "keydown", event => {
+            if ( event.key !== "z" ) {
+                return;
+            }
+            if (( event.ctrlKey || event.metaKey )) {
+                if ( event.shiftKey ) {
+                    this.handleRedo();
+                } else {
+                    this.handleUndo();
+                }
+            }
+            event.preventDefault();
+        });
+    },
     methods: {
+        ...mapActions( useHistoryStore, [
+            "undo",
+            "redo",
+            "clearHistory",
+        ]),
         randomize(): void {
             this.internalValue.angle = randomFromList([ 0, 90, 180, 270 ]);
             this.internalValue.randomness = Math.random();
@@ -244,6 +292,19 @@ export default {
         },
         save(): void {
             this.$emit( "save" );
+            this.clearHistory();
+        },
+        handleUndo(): void {
+            if ( this.canUndo ) {
+                console.info("UNDO!");
+                this.$emit( "restore", this.undo());
+            }
+        },
+        handleRedo(): void {
+            if ( this.canRedo ) {
+                console.info("REDO!");
+                this.$emit( "restore", this.redo());
+            }
         },
     },
 }
@@ -254,6 +315,40 @@ export default {
 @import "@/styles/_mixins";
 
 $labelWidth: 135px;
+
+.settings {
+    &__header {
+        position: relative;
+    }
+
+    &__history {
+        position: absolute;
+        top: 0;
+        right: 0;
+
+        &__button {
+            cursor: pointer;
+            border-radius: 50%;
+            background-color: transparent;
+            border: 2px solid $color-2;
+            color: $color-1;
+            // font-size: 1em;
+            padding: $spacing-xsmall ($spacing-medium - $spacing-small);
+            vertical-align: middle;
+            margin-left: $spacing-small;
+
+            &:hover {
+                color: $color-4;
+            }
+
+            &:disabled {
+                cursor: initial !important;
+                color: initial !important;
+                background-color: transparent !important;
+            }
+        }
+    }
+}
 
 .input-wrapper {
     display: flex;

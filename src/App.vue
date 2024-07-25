@@ -83,6 +83,7 @@
             <Settings
                 :has-image="hasImage"
                 v-model="settings"
+                @restore="restoreState( $event )"
                 @save="handleSave()"
             />
         </section>
@@ -91,6 +92,7 @@
 
 <script lang="ts">
 import debounce from "lodash.debounce";
+import { mapActions } from "pinia";
 import { Loader } from "zcanvas";
 import Settings from "@/components/Settings.vue";
 import type { PixelCanvas, SortSettings } from "@/definitions/types";
@@ -98,6 +100,7 @@ import { pixelsort } from "@/filters/pixel-sorter";
 import { IntervalFunction } from "@/filters/sorter/interval";
 import { flushCaches } from "@/filters/sorter/cache";
 import { SortingType } from "@/filters/sorter/sorting";
+import { useHistoryStore } from "@/store/history";
 import { imageToCanvas, canvasToFile, resizeImage } from "@/utils/canvas";
 import { handleFileDrag, handleFileDrop } from "@/utils/file";
 import { constrainAspectRatio } from "@/utils/math";
@@ -111,6 +114,7 @@ let sortedImage: PixelCanvas | undefined;
 let canvas: HTMLCanvasElement | undefined;
 let lastWidth = 0;
 let lastHeight = 0;
+let blockSave = true; // prevents re-saving when stepping through history states
 
 export default {
     components: {
@@ -140,6 +144,11 @@ export default {
                 } else {
                     this.debouncedFilter();
                 }
+                if ( !blockSave ) {
+                    this.debouncedSave();
+                } else {
+                    blockSave = false;
+                }
             }
         }
     },
@@ -156,8 +165,13 @@ export default {
 
         this.debouncedResize = debounce( this.resizeSource.bind( this ), 16 );
         this.debouncedFilter = debounce( this.runFilter.bind( this ), 16 );
+        this.debouncedSave   = debounce( this.saveState.bind( this ), 1000 );
     },
     methods: {
+        ...mapActions( useHistoryStore, [
+            "clearHistory",
+            "storeHistoryState", 
+        ]),
         openFileSelector(): void {
             // this is just some hackaroni to trigger the file selector from the
             // hidden file input. File inputs look uglier than buttons...
@@ -179,11 +193,13 @@ export default {
         },
         async loadFile( file: File ): Promise<void> {
             flushCaches();
+            this.clearHistory();
 
             const source = await Loader.loadImage( file );
             loadedImage = imageToCanvas( source );
 
             this.hasImage = true;
+            this.saveState();
             this.resizeSource();
         },
         resizeSource(): void {
@@ -240,6 +256,14 @@ export default {
         },
         downloadImage(): void {
             canvasToFile( canvas, "generated.png" );
+        },
+        restoreState( settings: SortSettings ): void {
+            console.info("restore to this:", settings );
+            blockSave = true;
+            this.$data.settings = settings;
+        },
+        saveState(): void {
+            this.storeHistoryState( this.$data.settings );
         },
     },
 };

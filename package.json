@@ -6,12 +6,14 @@
         "dev": "vite --force",
         "build": "vite build",
         "serve": "vite preview",
+        "test": "vitest --no-watch",
         "typecheck": "npx -p typescript tsc -p tsconfig.check.json --noEmit"
     },
     "dependencies": {
+        "floating-vue": "^5.2.2",
         "lodash.debounce": "^4.0.8",
-        "vue": "^3.3.4",
-        "floating-vue": "^5.2.2"
+        "pinia": "^2.1.7",
+        "vue": "^3.3.4"
     },
     "devDependencies": {
         "@vitejs/plugin-vue": "^4.2.3",
@@ -19,6 +21,7 @@
         "sass": "^1.51.0",
         "typescript": "^4.7.4",
         "vite": "^4.1.4",
+        "vitest": "^2.0.4",
         "vue-i18n": "^9.2.2",
         "zcanvas": "^6.0.5"
     }

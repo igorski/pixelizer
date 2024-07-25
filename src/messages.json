@@ -29,8 +29,12 @@
                 "lowerThreshold": "How dark a pixel must be to be considered a border for sorting",
                 "upperThreshold": "How bright a pixel must be to be considered as a border for sorting",
                 "randomize": "Get some inspiration",
-                "useAsBase": "Allows you to stack filtered output"
-            }
+                "useAsBase": "Allows you to stack filtered output (this clears state history)",
+                "undo": "Restore previous state",
+                "redo": "Restore next state"
+            },
+            "undo": "Undo",
+            "redo": "Redo"
         },
         "sortingTypes": {
             "hue": "Hue",
