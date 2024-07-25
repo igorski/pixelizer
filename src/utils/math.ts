@@ -44,7 +44,7 @@ export function constrainAspectRatio( containerWidth: number, containerHeight: n
     }
 
     return {
-        width: newWidth,
-        height: newHeight
+        width  : Math.round( newWidth ),
+        height : Math.round( newHeight )
     };
 }

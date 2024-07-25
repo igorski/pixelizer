@@ -22,27 +22,37 @@
  */
 import type { PixelCanvas } from "@/definitions/types";
 
-type CachedCanvas = {
-    id: string; // id of source Canvas used to create the cached version of a resized/rotated canvas
-    angle: number;
-    canvas: PixelCanvas;
-};
-
 type Cache = {
-    rotation: CachedCanvas | undefined;
+    rotation: Record<string, PixelCanvas>;
+    mask: Record<string, PixelCanvas>;
 };
 
 const canvasCache: Cache = {
-    rotation: undefined,
+    rotation: {},
+    mask: {},
 };
 
 export const getCachedRotation = ( id: string, angle: number ): PixelCanvas | undefined => {
-    if ( id === canvasCache.rotation?.id && angle === canvasCache.rotation?.angle ) {
-        return canvasCache.rotation.canvas;
-    }
-    return undefined;
+    const key = `${id}_${angle}`;
+    return canvasCache.rotation[ key ];
 };
 
 export const setCachedRotation = ( id: string, angle: number, canvas: PixelCanvas ): void => {
-    canvasCache.rotation = { id, angle, canvas };
+    const key = `${id}_${angle}`;
+    canvasCache.rotation[ key ] = canvas;
+};
+
+export const getCachedMask = ( width: number, height: number, angle: number ): PixelCanvas | undefined => {
+    const id = `${width}_${height}_${angle}`;
+    return canvasCache.mask[ id ];
+};
+
+export const setCachedMask = ( width: number, height: number, angle: number, canvas: PixelCanvas ): void => {
+    const id = `${width}_${height}_${angle}`;
+    canvasCache.mask[ id ] = canvas;
+};
+
+export const flushCaches = (): void => {
+    canvasCache.rotation = {};
+    canvasCache.mask = {};
 };

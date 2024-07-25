@@ -12,7 +12,7 @@ a [Processing script](https://github.com/kimasendorf/ASDFPixelSort) by Kim Asend
  * Waves filter broken at higher resolutions ? (is it the rotation?)
  * Group settings field by function
  * Include "Edges" algorithm
- * Add mask support
+ * Add loading of mask support
  * Mobile view
  * Add button to download image at original (high) resolution
 

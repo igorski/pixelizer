@@ -80,6 +80,7 @@ import Settings from "@/components/Settings.vue";
 import type { PixelCanvas, SortSettings } from "@/definitions/types";
 import { pixelsort } from "@/filters/pixel-sorter";
 import { IntervalFunction } from "@/filters/sorter/interval";
+import { flushCaches } from "@/filters/sorter/cache";
 import { SortingType } from "@/filters/sorter/sorting";
 import { imageToCanvas, canvasToFile, resizeImage } from "@/utils/canvas";
 import { handleFileDrag, handleFileDrop } from "@/utils/file";
@@ -160,6 +161,8 @@ export default {
             this.loadFile( file );
         },
         async loadFile( file: File ): Promise<void> {
+            flushCaches();
+
             const source = await Loader.loadImage( file );
             loadedImage = imageToCanvas( source );
 
@@ -197,10 +200,6 @@ export default {
                 });
                 ({ canvas } = sortedImage );
             } catch ( e ) {
-                if ( this.$data.settings.angle === 0 ) {
-                    this.$data.settings.angle = 1;
-                    return this.runFilter();
-                }
                 console.error( `Irrecoverable error occurred during sorting: ${e.message}`, e );
             }
             // @todo use zCanvas and pool a Sprite

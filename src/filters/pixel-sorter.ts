@@ -25,7 +25,7 @@
 import type { Size } from "zcanvas";
 import type { PixelCanvas, PixelList } from "@/definitions/types";
 import { applyThreshold } from "@/filters/threshold";
-import { getCachedRotation, setCachedRotation } from "@/filters/sorter/cache";
+import { getCachedRotation, setCachedRotation, getCachedMask, setCachedMask } from "@/filters/sorter/cache";
 import { getIntervals, IntervalFunction } from "@/filters/sorter/interval";
 import { sortImage } from "@/filters/sorter/sorter";
 import { getSortingFunctionByType, SortingType } from "@/filters/sorter/sorting";
@@ -87,9 +87,16 @@ export const pixelsort = ({ image, maskImage, intervalImage, randomness = 0, cha
 
     const imageData = image.context.getImageData( 0, 0, width, height );
     
-    maskImage = maskImage ?? createCanvas( image.width, image.height );
-    maskImage = rotateCanvas( applyThreshold( maskImage ), angle );
+    const cachedMask = getCachedMask( image.width, image.height, angle );
 
+    if ( cachedMask ) {
+        maskImage = cachedMask;
+    } else {
+        maskImage = maskImage ?? createCanvas( image.width, image.height );
+        maskImage = rotateCanvas( applyThreshold( maskImage ), angle );
+
+        setCachedMask( image.width, image.height, angle, maskImage );
+    }
     const maskData = maskImage.context.getImageData( 0, 0, maskImage.width, maskImage.height );
     
     const intervals = getIntervals( intervalFunction, {
