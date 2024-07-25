@@ -341,7 +341,7 @@ export default {
         display: flex;
         flex-direction: column;
         align-items: center;
-        max-width: 90%;
+        max-width: 320px;
         text-align: center;
         margin: 0 auto;
     }
@@ -361,6 +361,7 @@ export default {
     }
 
     &__privacy-explanation {
+        margin-top: $spacing-medium;
         font-size: 0.85em;
     }
 

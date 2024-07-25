@@ -14,7 +14,6 @@ least for the time being.
 
  * Create undo / redo
  * Settings should be able to be serialized into a string (to append to filename on download)
- * Group settings field by function
  * Include "Edges" algorithm
  * Add loading of mask support
  * Add button to download image at original (high) resolution

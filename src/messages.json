@@ -7,8 +7,8 @@
             "download": "Download"
         },
         "main": {
-            "fileSelectExplanation": "Select a file or drag an image into this window",
-            "privacy": "Your images will be loaded into your browser and not be uploaded to any server"
+            "fileSelectExplanation": "Select or drag an image file ( JPG, PNG, GIF ) into this window to get started",
+            "privacy": "Your images will load into your browser's memory for this session and will not be uploaded anywhere."
         },
         "settings": {
             "angle": "Angle",
@@ -20,8 +20,17 @@
             "charLength": "Char length",
             "randomize": "Randomize",
             "useAsBase": "Use as base",
-            "randomizeExplanation": "Get some inspiration",
-            "useAsBaseExplanation": "Allows you to stack filtered output"
+            "description": {
+                "angle": "Angle (in degrees) determining the sorting direction",
+                "randomness": "Percentage of pixels NOT to sort (0% = fully sorted, 100% = no sorting)",
+                "charLength": "Characteristic length for the randomized width generation",
+                "sortingType": "The algorithm used to sort the pixels",
+                "intervalFunction": "The algorithm used to calculate the intervals between pixels",
+                "lowerThreshold": "How dark a pixel must be to be considered a border for sorting",
+                "upperThreshold": "How bright a pixel must be to be considered as a border for sorting",
+                "randomize": "Get some inspiration",
+                "useAsBase": "Allows you to stack filtered output"
+            }
         },
         "sortingTypes": {
             "hue": "Hue",

@@ -44,21 +44,6 @@ interface PixelSortParams {
     angle?: number;
 }
 
-/**
- *     :param image: image to pixelsort
-    :param mask_image: Image used for masking parts of the image.
-    :param interval_image: Image used to define intervals. Must be black and white.
-    :param randomness: What percentage of intervals *not* to sort. 0 by default.
-    :param char_length:	Characteristic length for the random width generator. Used in mode `random` and `waves`.
-    :param sorting_function: Sorting function to use for sorting the pixels.
-    :param interval_function: Controls how the intervals used for sorting are defined.
-    :param lower_threshold: How dark must a pixel be to be considered as a 'border' for sorting? Takes values from 0-1.
-        Used in edges and threshold modes.
-    :param upper_threshold: How bright must a pixel be to be considered as a 'border' for sorting? Takes values from
-        0-1. Used in threshold mode.
-    :param angle: Angle at which you're pixel sorting in degrees.
-    :return: pixelsorted image
- */
 export const pixelsort = ({ image, maskImage, intervalImage, randomness = 0, charLength = 0.5,
     sortingFunction = SortingType.LIGHTNESS, intervalFunction = IntervalFunction.THRESHOLD,
     lowerThreshold = 0.25, upperThreshold = 0.8, angle = 0 }: PixelSortParams ): PixelCanvas => {

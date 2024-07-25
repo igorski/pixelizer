@@ -39,7 +39,11 @@
         </div> -->
         
         <div class="input-wrapper">
-            <label for="inputAngle" v-t="'settings.angle'"></label>
+            <label
+                for="inputAngle"
+                v-t="'settings.angle'"
+                v-tooltip.left="$t('settings.description.angle')"
+            ></label>
             <input
                 type="range"
                 min="0"
@@ -55,7 +59,11 @@
             />
         </div>
         <div class="input-wrapper">
-            <label for="inputRandom" v-t="'settings.randomness'"></label>
+            <label
+                for="inputRandom"
+                v-t="'settings.randomness'"
+                v-tooltip.left="$t('settings.description.randomness')"
+            ></label>
             <input
                 id="inputRandom"
                 type="range"
@@ -66,7 +74,11 @@
             />
         </div>
         <div class="input-wrapper">
-            <label for="inputLowerThreshold" v-t="'settings.lowerThreshold'"></label>
+            <label
+                for="inputLowerThreshold"
+                v-t="'settings.lowerThreshold'"
+                v-tooltip.left="$t('settings.description.lowerThreshold')"
+            ></label>
             <input
                 id="inputLowerThreshold"
                 type="range"
@@ -77,7 +89,11 @@
             />
         </div>
         <div class="input-wrapper">
-            <label for="inputUpperThreshold" v-t="'settings.upperThreshold'"></label>
+            <label
+                for="inputUpperThreshold"
+                v-t="'settings.upperThreshold'"
+                v-tooltip.left="$t('settings.description.upperThreshold')"
+            ></label>
             <input
                 id="inputUpperThreshold"
                 type="range"
@@ -88,7 +104,11 @@
             />
         </div>
         <div class="input-wrapper input-wrapper--select">
-            <label for="inputSortingType" v-t="'settings.sortingType'"></label>
+            <label
+                for="inputSortingType"
+                v-t="'settings.sortingType'"
+                v-tooltip.left="$t('settings.description.sortingType')"
+            ></label>
             <select
                 id="inputSortingType"
                 v-model="internalValue.sortingType"
@@ -101,7 +121,11 @@
             </select>
         </div>
         <div class="input-wrapper input-wrapper--select">
-            <label for="inputIntervalFunction" v-t="'settings.intervalFunction'"></label>
+            <label
+                for="inputIntervalFunction"
+                v-t="'settings.intervalFunction'"
+                v-tooltip.left="$t('settings.description.intervalFunction')"
+            ></label>
             <select
                 id="inputIntervalFunction"
                 v-model="internalValue.intervalFunction"
@@ -133,14 +157,14 @@
             @click="randomize()"
             class="settings-button"
             v-t="'settings.randomize'"
-            v-tooltip="$t('settings.randomizeExplanation')"
+            v-tooltip="$t('settings.description.randomize')"
         ></button>
         <button
             @click="save()"
             class="save-button"
             :disabled="!hasImage"
             v-t="'settings.useAsBase'"
-            v-tooltip="$t('settings.useAsBaseExplanation')"
+            v-tooltip="$t('settings.description.useAsBase')"
         ></button>
     </section>
  </template>
@@ -243,6 +267,7 @@ $labelWidth: 135px;
 
     label {
         width: $labelWidth;
+        cursor: pointer;
     }
 
     input,

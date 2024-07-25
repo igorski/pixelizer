@@ -11,3 +11,10 @@ html, body {
 body {
     color: #b6b6b6;
 }
+
+/* tooltips */
+
+.v-popper__popper {
+    // max-width: 240px;
+    font-size: 0.85em;
+}
