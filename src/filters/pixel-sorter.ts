@@ -39,13 +39,13 @@ interface PixelSortParams {
     charLength?: number; // normalized 0 - 1 range
     lowerThreshold?: number; // normalized 0 - 1 range
     upperThreshold?: number; // normalized 0 - 1 range
-    sortingFunction?: SortingType,
+    sortingType?: SortingType,
     intervalFunction?: IntervalFunction;
     angle?: number;
 }
 
 export const pixelsort = ({ image, maskImage, intervalImage, randomness = 0, charLength = 0.5,
-    sortingFunction = SortingType.LIGHTNESS, intervalFunction = IntervalFunction.THRESHOLD,
+    sortingType = SortingType.LIGHTNESS, intervalFunction = IntervalFunction.THRESHOLD,
     lowerThreshold = 0.25, upperThreshold = 0.8, angle = 0 }: PixelSortParams ): PixelCanvas => {
 
     const hasRotation = ( angle % 360 ) !== 0;
@@ -98,7 +98,7 @@ export const pixelsort = ({ image, maskImage, intervalImage, randomness = 0, cha
         maskData,
         intervals,
         randomness,
-        sortingFunction: getSortingFunctionByType( sortingFunction )
+        sortingFunction: getSortingFunctionByType( sortingType )
     });
 
     let output = placePixels(

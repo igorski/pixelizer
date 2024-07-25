@@ -20,27 +20,27 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import type { Size } from "zcanvas";
-import type { IntervalFunction } from "@/filters/sorter/interval";
+import type { SortSettings } from "@/definitions/types";
 import type { SortingType } from "@/filters/sorter/sorting";
+import type { IntervalFunction } from "@/filters/sorter/interval";
 
-export interface SortSettings {
-    width: number;
-    height: number;
-    angle: number;
-    randomness: number; // normalized 0 - 1
-    charLength: number; // normalized 0 - 1
-    lowerThreshold: number; // normalized 0 - 1
-    upperThreshold: number; // normalized 0 - 1
-    sortingType: SortingType;
-    intervalFunction: IntervalFunction;
+export const settingToString = ( setting: SortSettings ): string => {
+    const { width, height, angle, randomness, charLength, lowerThreshold, upperThreshold, sortingType, intervalFunction } = setting;
+    return `a${angle}_l${lowerThreshold}_u${upperThreshold}_r${randomness}_s${sortingType}_i${intervalFunction}_c${charLength}_w${width}_h${height}`;
 };
 
-export type Pixel = [ number, number, number, number ]; // RGBA value
-export type PixelList = Pixel[];
+export const stringToSetting = ( string: string ): SortSettings => {
+    const arr = string.split( "_" );
 
-export type PixelCanvas = Size & {
-    id: string;
-    canvas: HTMLCanvasElement;
-    context: CanvasRenderingContext2D;
+    return {
+        angle: parseFloat( arr[ 0 ].substring( 1 )),
+        lowerThreshold: parseFloat( arr[ 1 ].substring( 1 )),
+        upperThreshold: parseFloat( arr[ 2 ].substring( 1 )),
+        randomness: parseFloat( arr[ 3 ].substring( 1 )),
+        sortingType: arr[ 4 ].substring( 1 ) as SortingType,
+        intervalFunction: arr[ 5 ].substring( 1 ) as IntervalFunction,
+        charLength: parseFloat( arr[ 6 ].substring( 1 )),
+        width: parseFloat( arr[ 7 ].substring( 1 )),
+        height: parseFloat( arr[ 8 ].substring( 1 )),
+    };
 };

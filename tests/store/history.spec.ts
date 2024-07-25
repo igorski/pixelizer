@@ -1,23 +1,8 @@
-import type { Store } from "pinia";
 import { setActivePinia, createPinia } from "pinia";
 import { describe, it, expect, beforeEach } from "vitest";
 import type { SortSettings } from "@/definitions/types";
 import { useHistoryStore, MAX_STATES } from "@/store/history";
-
-function createSetting( data: Partial<SortSettings> = {}): SortSettings {
-    return {
-        width: 300,
-        height: 300,
-        angle: 0,
-        randomness: 0,
-        charLength: 10,
-        lowerThreshold: 0.25,
-        upperThreshold: 0.75,
-        sortingFunction: "lightness",
-        intervalFunction: "waves",
-        ...data,
-    };
-}
+import { createSetting } from "../__helpers";
 
 describe( "History State store", () => {
     beforeEach(() => {

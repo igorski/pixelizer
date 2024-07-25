@@ -103,8 +103,18 @@ export const imageToCanvas = ( image: { size: Size, image: HTMLImageElement } ):
     return canvas;
 };
 
-export const canvasToFile = ( canvas: HTMLCanvasElement, fileName: string ): void => {
-    const snapshot = canvas!.toDataURL( "image/png" );
+export const canvasToFile = ( canvas: HTMLCanvasElement, fileName: string, scale = 1 ): void => {
+    let source = canvas;
+    if ( scale !== 1 ) {
+        const width  = canvas.width * scale;
+        const height = canvas.height * scale;
+
+        const scaledCanvas = createCanvas( width, height, true );
+        scaledCanvas.context.drawImage( canvas, 0, 0, canvas.width, canvas.height, 0, 0, width, height );
+
+        source = scaledCanvas.canvas;
+    }
+    const snapshot = source!.toDataURL( "image/png" );
     const downloadLink = document.createElement( "a" );
     downloadLink.setAttribute( "download", fileName );
     downloadLink.setAttribute( "href", snapshot.replace(/^data:image\/png/, "data:application/octet-stream" ));

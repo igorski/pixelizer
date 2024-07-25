@@ -12,9 +12,7 @@ least for the time being.
 
 ## TODO
 
- * Downloading image should multiply for device pixel ratio
  * Filters do not work full width of on landscape images when angle is at exactly 90 degrees
- * Settings should be able to be serialized into a string (to append to filename on download)
  * Include "Edges" algorithm
  * Add loading of mask support
  * Add button to download image at original (high) resolution

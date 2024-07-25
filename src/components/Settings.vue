@@ -296,13 +296,11 @@ export default {
         },
         handleUndo(): void {
             if ( this.canUndo ) {
-                console.info("UNDO!");
                 this.$emit( "restore", this.undo());
             }
         },
         handleRedo(): void {
             if ( this.canRedo ) {
-                console.info("REDO!");
                 this.$emit( "restore", this.redo());
             }
         },

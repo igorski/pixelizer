@@ -68,4 +68,4 @@ export const useHistoryStore = defineStore( "history", {
             this.step = -1;
         },
     },
-})
+});

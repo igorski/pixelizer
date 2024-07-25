@@ -103,6 +103,7 @@ import { SortingType } from "@/filters/sorter/sorting";
 import { useHistoryStore } from "@/store/history";
 import { imageToCanvas, canvasToFile, resizeImage } from "@/utils/canvas";
 import { handleFileDrag, handleFileDrop } from "@/utils/file";
+import { settingToString } from "@/utils/string";
 import { constrainAspectRatio } from "@/utils/math";
 import "floating-vue/dist/style.css";
 
@@ -112,6 +113,7 @@ let loadedImage: PixelCanvas | undefined;
 let resizedImage: PixelCanvas | undefined;
 let sortedImage: PixelCanvas | undefined;
 let canvas: HTMLCanvasElement | undefined;
+let fileName: string | undefined;
 let lastWidth = 0;
 let lastHeight = 0;
 let blockSave = true; // prevents re-saving when stepping through history states
@@ -198,6 +200,7 @@ export default {
             const source = await Loader.loadImage( file );
             loadedImage = imageToCanvas( source );
 
+            [ fileName ] = file.name.split( "." );
             this.hasImage = true;
             this.saveState();
             this.resizeSource();
@@ -255,10 +258,9 @@ export default {
             this.runFilter();
         },
         downloadImage(): void {
-            canvasToFile( canvas, "generated.png" );
+            canvasToFile( canvas, `${fileName}_${settingToString(this.$data.settings)}_.png`, window.devicePixelRatio );
         },
         restoreState( settings: SortSettings ): void {
-            console.info("restore to this:", settings );
             blockSave = true;
             this.$data.settings = settings;
         },
