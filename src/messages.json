@@ -1,4 +1,39 @@
 {
     "en": {
+        "header": {
+            "title": "Pixelizer",
+            "selectFile": "Select file",
+            "download": "Download"
+        },
+        "main": {
+            "fileSelectExplanation": "Select a file or drag an image into this window"
+        },
+        "settings": {
+            "angle": "Angle",
+            "randomness": "Randomness",
+            "lowerThreshold": "Lower threshold",
+            "upperThreshold": "Upper threshold",
+            "sortingType": "Sorting type",
+            "intervalFunction": "Interval function",
+            "charLength": "Char length",
+            "randomize": "Randomize",
+            "useAsBase": "Use as base",
+            "randomizeExplanation": "Get some inspiration",
+            "useAsBaseExplanation": "Allows you to stack filtered output"
+        },
+        "sortingTypes": {
+            "hue": "Hue",
+            "intensity": "Intensity",
+            "lightness": "Lightness",
+            "minimum": "Minimum",
+            "saturation": "Saturation"
+        },
+        "intervalFunctions": {
+            "none": "None",
+            "random": "Random",
+            "threshold": "Threshold",
+            "waves": "Waves",
+            "edges": "Edges"
+        }
     }
 }

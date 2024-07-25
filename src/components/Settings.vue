@@ -39,7 +39,7 @@
         </div> -->
         
         <div class="input-wrapper">
-            <label for="inputAngle">Angle</label>
+            <label for="inputAngle" v-t="'settings.angle'"></label>
             <input
                 type="range"
                 min="0"
@@ -55,7 +55,7 @@
             />
         </div>
         <div class="input-wrapper">
-            <label for="inputRandom">Randomness</label>
+            <label for="inputRandom" v-t="'settings.randomness'"></label>
             <input
                 id="inputRandom"
                 type="range"
@@ -66,7 +66,7 @@
             />
         </div>
         <div class="input-wrapper">
-            <label for="inputLowerThreshold">Lower threshold</label>
+            <label for="inputLowerThreshold" v-t="'settings.lowerThreshold'"></label>
             <input
                 id="inputLowerThreshold"
                 type="range"
@@ -77,7 +77,7 @@
             />
         </div>
         <div class="input-wrapper">
-            <label for="inputUpperThreshold">Upper threshold</label>
+            <label for="inputUpperThreshold" v-t="'settings.upperThreshold'"></label>
             <input
                 id="inputUpperThreshold"
                 type="range"
@@ -88,29 +88,29 @@
             />
         </div>
         <div class="input-wrapper input-wrapper--select">
-            <label for="inputSortingType">Sorting type</label>
+            <label for="inputSortingType" v-t="'settings.sortingType'"></label>
             <select
                 id="inputSortingType"
                 v-model="internalValue.sortingType"
             >
-                <option value="hue">Hue</option>
-                <option value="intensity">Intensity</option>
-                <option value="lightness">Lightness</option>
-                <option value="minimum">Minimum</option>
-                <option value="saturation">Saturation</option>
+                <option
+                    v-for="option in sortingOptions"
+                    :key="option.value"
+                    :value="option.value"
+                >{{ option.title }}</option>
             </select>
         </div>
         <div class="input-wrapper input-wrapper--select">
-            <label for="inputIntervalFunction">Interval function</label>
+            <label for="inputIntervalFunction" v-t="'settings.intervalFunction'"></label>
             <select
                 id="inputIntervalFunction"
                 v-model="internalValue.intervalFunction"
             >
-                <option value="none">None</option>
-            <!-- <option value="edges">Edges</option> -->
-                <option value="random">Random</option>
-                <option value="threshold">Threshold</option>
-                <option value="waves">Waves</option>
+                <option
+                    v-for="option in intervalOptions"
+                    :key="option.value"
+                    :value="option.value"
+                >{{ option.title }}</option>
             </select>
         </div>
         <div
@@ -132,7 +132,16 @@
         <button
             @click="randomize()"
             class="settings-button"
-        >Randomize!</button>
+            v-t="'settings.randomize'"
+            v-tooltip="$t('settings.randomizeExplanation')"
+        ></button>
+        <button
+            @click="save()"
+            class="save-button"
+            :disabled="!hasImage"
+            v-t="'settings.useAsBase'"
+            v-tooltip="$t('settings.useAsBaseExplanation')"
+        ></button>
     </section>
  </template>
 
@@ -143,13 +152,17 @@ import { SortingType } from "@/filters/sorter/sorting";
 import { IntervalFunction } from "@/filters/sorter/interval";
 import { randomFromList } from "@/utils/random";
 
-// @topo compute options!
-const SORTING_TYPES = [ SortingType.HUE, SortingType.INTENSIY, SortingType.LIGHTNESS, SortingType.MINIMUM, SortingType.SATURATION ];
+const SORTING_TYPES = [ SortingType.HUE, SortingType.INTENSITY, SortingType.LIGHTNESS, SortingType.MINIMUM, SortingType.SATURATION ];
 const INTERVAL_FNS  = [ IntervalFunction.NONE, /*IntervalFunction.EDGES, */IntervalFunction.RANDOM, IntervalFunction.THRESHOLD, IntervalFunction.WAVES ];
 
 const CHAR_LENGTH_SUPPORTING_INTERVALS = [
     IntervalFunction.RANDOM, IntervalFunction.WAVES
 ];
+
+type SelectOption = {
+    value: string | number;
+    title: string;
+};
 
 export default {
     props: {
@@ -157,8 +170,12 @@ export default {
             type: Object as PropType<SortSettings>,
             required: true,
         },
+        hasImage: {
+            type: Boolean,
+            default: false,
+        },
     },
-    emits: [ "update:modelValue" ],
+    emits: [ "update:modelValue", "save" ],
     computed: {
         internalValue: {
             get(): SortSettings {
@@ -171,6 +188,18 @@ export default {
         supportsCharLength(): boolean {
             return CHAR_LENGTH_SUPPORTING_INTERVALS.includes( this.modelValue.intervalFunction );
         },
+        sortingOptions(): SelectOption[] {
+            return SORTING_TYPES.map( value => ({
+                value,
+                title: this.$t( `sortingTypes.${value}` )
+            }));
+        },
+        intervalOptions(): SelectOption[] {
+            return INTERVAL_FNS.map( value => ({
+                value,
+                title: this.$t( `intervalFunctions.${value}` )
+            }));
+        },
     },
     methods: {
         randomize(): void {
@@ -181,6 +210,9 @@ export default {
             this.internalValue.upperThreshold = Math.random();
             this.internalValue.sortingType = randomFromList( SORTING_TYPES );
             this.internalValue.intervalFunction = randomFromList( INTERVAL_FNS );
+        },
+        save(): void {
+            this.$emit( "save" );
         },
     },
 }
@@ -249,5 +281,9 @@ $labelWidth: 125px;
 
 .settings-button {
     @include button();
+}
+
+.save-button {
+    @include button( false );
 }
 </style>

@@ -23,19 +23,21 @@
 <template>
     <section class="app-ui">
         <header class="app-ui__header">
-            <h1>Pixelizer</h1>
+            <h1 v-t="'header.title'"></h1>
             <section class="file-manager">
                 <button
                     type="button"
                     class="select-button"
+                    v-t="'header.selectFile'"
                     @click="openFileSelector()"
-                >Select file</button>
+                ></button>
                 <button
-                    v-if="hasImage"
                     type="button"
                     class="download-button"
+                    :disabled="!hasImage"
+                    v-t="'header.download'"
                     @click="downloadImage()"
-                >Download</button>
+                ></button>
                 <input
                     type="file"
                     ref="fileInput"
@@ -52,15 +54,18 @@
             >
                 <div
                     v-if="!hasImage"
+                    v-t="'main.fileSelectExplanation'"
                     class="app-ui__image-placeholder"
                     @click="openFileSelector()"
-                >Select a file or drag an image into this window</div>
+                ></div>
             </div>
         </div>
     </section>
     <div class="app-ui__settings">
         <Settings
+            :has-image="hasImage"
             v-model="settings"
+            @save="handleSave()"
         />
     </div>
 </template>
@@ -73,14 +78,16 @@ import type { PixelCanvas, SortSettings } from "@/definitions/types";
 import { pixelsort } from "@/filters/pixel-sorter";
 import { IntervalFunction } from "@/filters/sorter/interval";
 import { SortingType } from "@/filters/sorter/sorting";
-import { resizeImage } from "@/utils/canvas";
+import { imageToCanvas, canvasToFile, resizeImage } from "@/utils/canvas";
 import { handleFileDrag, handleFileDrop } from "@/utils/file";
 import { constrainAspectRatio } from "@/utils/math";
+import "floating-vue/dist/style.css";
 
 const MAX_IMAGE_SIZE = 1000;
 
 let loadedImage: PixelCanvas | undefined;
 let resizedImage: PixelCanvas | undefined;
+let sortedImage: PixelCanvas | undefined;
 let canvas: HTMLCanvasElement | undefined;
 let lastWidth = 0;
 let lastHeight = 0;
@@ -150,7 +157,8 @@ export default {
             this.loadFile( file );
         },
         async loadFile( file: File ): Promise<void> {
-            loadedImage = await Loader.loadImage( file );
+            const source = await Loader.loadImage( file );
+            loadedImage = imageToCanvas( source );
 
             this.hasImage = true;
             this.resizeSource();
@@ -165,12 +173,12 @@ export default {
             lastHeight = height;
             
             // resize image (maintaining its aspect ratio) to desired width and height
-            const size = constrainAspectRatio( width, height, loadedImage.size.width, loadedImage.size.height );
-            resizedImage = resizeImage( loadedImage.image, size.width, size.height );
+            const size = constrainAspectRatio( width, height, loadedImage.width, loadedImage.height );
+            resizedImage = resizeImage( loadedImage.canvas, size.width, size.height );
 
             this.runFilter();
         },
-        runFilter(): void {
+        runFilter( hiRes = false ): void {
             if ( resizedImage === undefined ) {
                 return;
             }
@@ -180,33 +188,39 @@ export default {
                 this.$refs.canvasContainer.removeChild( canvas );
             }
             try {
-                ({ canvas } = pixelsort({
-                    image: resizedImage,
+                sortedImage = pixelsort({
+                    image: hiRes ? loadedImage : resizedImage,
                     ...settings,
-                }));
+                });
+                ({ canvas } = sortedImage );
             } catch ( e ) {
                 if ( this.$data.settings.angle === 0 ) {
                     this.$data.settings.angle = 90;
                     return this.runFilter();
                 }
-                console.error( `Irrecoverable error occurred during sorting: ${e.message}` );
+                console.error( `Irrecoverable error occurred during sorting: ${e.message}`, e );
             }
-            this.$refs.canvasContainer.appendChild( canvas );
+            // @todo use zCanvas and pool a Sprite
+            if ( !hiRes ) {
+                this.$refs.canvasContainer.appendChild( canvas );
+            }
         },
         handleResize(): void {
             const availableBounds = this.$refs.canvasWrapper.getBoundingClientRect();
 
-            const scaledValue = Math.min( MAX_IMAGE_SIZE, Math.floor(( availableBounds.height * 0.9 ) / 100 ) * 100 );
+            const scaledValue = Math.min( MAX_IMAGE_SIZE, Math.floor( availableBounds.height * 0.9 ));
 
             this.$data.settings.width  = scaledValue;
             this.$data.settings.height = scaledValue;
         },
+        handleSave(): void {
+            // this.runFilter( true ); // only if we want to apply onto the (large) original image
+            loadedImage = sortedImage;
+            this.resizeSource();
+            this.runFilter();
+        },
         downloadImage(): void {
-            const snapshot = canvas!.toDataURL( "image/png" );
-            const downloadLink = document.createElement( "a" );
-            downloadLink.setAttribute( "download", "generated.png" );
-            downloadLink.setAttribute( "href", snapshot.replace(/^data:image\/png/, "data:application/octet-stream" ));
-            downloadLink.click();
+            canvasToFile( canvas, "generated.png" );
         },
     },
 };
@@ -286,11 +300,6 @@ $sideBarWidth: 360px;
 }
 
 .download-button {
-    @include button();
-    background-color: $color-1;
-
-    &:hover {
-        background-color: $color-4;
-    }
+    @include button( false );
 }
 </style>

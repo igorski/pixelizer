@@ -52,7 +52,7 @@ export const createCanvas = ( width: number, height: number, crisp = false ): Pi
         canvas,
         context,
         width,
-        height
+        height,
     };
 };
 
@@ -107,6 +107,14 @@ export const imageToCanvas = ( image: { size: Size, image: HTMLImageElement } ):
     canvas.context.drawImage( image.image, 0, 0 );
 
     return canvas;
+};
+
+export const canvasToFile = ( canvas: HTMLCanvasElement, fileName: string ): void => {
+    const snapshot = canvas!.toDataURL( "image/png" );
+    const downloadLink = document.createElement( "a" );
+    downloadLink.setAttribute( "download", "generated.png" );
+    downloadLink.setAttribute( "href", snapshot.replace(/^data:image\/png/, "data:application/octet-stream" ));
+    downloadLink.click();
 };
 
 export const resizeImage = ( image: HTMLImageElement | HTMLCanvasElement | ImageBitmap, width?: number, height?: number ): PixelCanvas => {
