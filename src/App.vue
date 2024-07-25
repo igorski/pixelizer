@@ -52,12 +52,15 @@
                 ref="canvasContainer"
                 class="app-ui__canvas"
             >
-                <div
-                    v-if="!hasImage"
-                    v-t="'main.fileSelectExplanation'"
-                    class="app-ui__image-placeholder"
-                    @click="openFileSelector()"
-                ></div>
+                <div v-if="!hasImage" class="app-ui__file-upload">
+                    <div
+                        v-if="!hasImage"
+                        v-t="'main.fileSelectExplanation'"
+                        class="app-ui__image-placeholder"
+                        @click="openFileSelector()"
+                    ></div>
+                    <p class="app-ui__privacy-explanation" v-t="'main.privacy'"></p>
+                </div>
             </div>
         </div>
     </section>
@@ -285,6 +288,12 @@ $sideBarWidth: 370px;
         background-color: #333;
     }
 
+    &__file-upload {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
     &__image-placeholder {
         cursor: pointer;
         border-radius: $spacing-xlarge;
@@ -292,6 +301,15 @@ $sideBarWidth: 370px;
         border: 3px solid #b6b6b6;
         font-size: 1.25em;
         user-select: none;
+
+        &:hover {
+            border-color: $color-1;
+            color: #FFF;
+        }
+    }
+
+    &__privacy-explanation {
+        font-size: 0.85em;
     }
 }
 

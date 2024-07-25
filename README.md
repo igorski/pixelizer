@@ -8,13 +8,14 @@ a [Processing script](https://github.com/kimasendorf/ASDFPixelSort) by Kim Asend
 
 ## TODO
 
- * Waves filter broken at higher resolutions ? (needs to be multiple of 100...)
- * Cache rotated image on repeated invocations
+ * Create undo / redo
+ * Waves filter broken at higher resolutions ? (is it the rotation?)
+ * Cache rotated and masked image on repeated invocations!
  * Group settings field by function
  * Include "Edges" algorithm
  * Add mask support
  * Mobile view
- * Create save current state fn to keep filtering new passes over affected image
+ * Add button to download image at original (high) resolution
 
 ## Project setup
 

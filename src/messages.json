@@ -6,7 +6,8 @@
             "download": "Download"
         },
         "main": {
-            "fileSelectExplanation": "Select a file or drag an image into this window"
+            "fileSelectExplanation": "Select a file or drag an image into this window",
+            "privacy": "Your images will be loaded into your browser and not be uploaded to any server"
         },
         "settings": {
             "angle": "Angle",
