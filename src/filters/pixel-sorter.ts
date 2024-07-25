@@ -97,7 +97,7 @@ export const pixelsort = ({ image, maskImage, intervalImage, randomness = 0, cha
     }
     const maskData = maskImage.context.getImageData( 0, 0, maskImage.width, maskImage.height );
     
-    charLength *= 400;//size.width; // for maximum width of source image
+    charLength = Math.round( charLength * 400 );//size.width; // for maximum width of source image
     
     const intervals = getIntervals( intervalFunction, {
         image,

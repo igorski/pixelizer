@@ -21,55 +21,71 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 <template>
-    <section class="app-ui">
-        <header class="app-ui__header">
-            <h1 v-t="'header.title'"></h1>
-            <section class="file-manager">
-                <button
-                    type="button"
-                    class="select-button"
-                    v-t="'header.selectFile'"
+    <section
+        ref="canvasWrapper"
+        class="app__canvas-wrapper"
+        :class="{
+            'app__canvas-wrapper--expanded': !collapseMenu
+        }"
+    >
+        <div
+            ref="canvasContainer"
+            class="app__canvas"
+        >
+            <div v-if="!hasImage" class="app__file-upload">
+                <div
+                    v-if="!hasImage"
+                    v-t="'main.fileSelectExplanation'"
+                    class="app__image-placeholder"
                     @click="openFileSelector()"
-                ></button>
-                <button
-                    type="button"
-                    class="download-button"
-                    :disabled="!hasImage"
-                    v-t="'header.download'"
-                    @click="downloadImage()"
-                ></button>
-                <input
-                    type="file"
-                    ref="fileInput"
-                    accept="image/png,image/gif,image/jpeg"
-                    style="display: none;"
-                    @change="handleImageSelect( $event )"
-                />
-            </section>
-        </header>
-        <div ref="canvasWrapper" class="app-ui__canvas-wrapper">
-            <div
-                ref="canvasContainer"
-                class="app-ui__canvas"
-            >
-                <div v-if="!hasImage" class="app-ui__file-upload">
-                    <div
-                        v-if="!hasImage"
-                        v-t="'main.fileSelectExplanation'"
-                        class="app-ui__image-placeholder"
-                        @click="openFileSelector()"
-                    ></div>
-                    <p class="app-ui__privacy-explanation" v-t="'main.privacy'"></p>
-                </div>
+                ></div>
+                <p class="app__privacy-explanation" v-t="'main.privacy'"></p>
             </div>
         </div>
     </section>
-    <div class="app-ui__settings">
-        <Settings
-            :has-image="hasImage"
-            v-model="settings"
-            @save="handleSave()"
-        />
+    <div
+        class="app__settings"
+        :class="{
+            'app__settings--collapsed': collapseMenu
+        }"
+    >
+        <button
+            class="app__settings__collapse-btn"
+            @click="collapseMenu = !collapseMenu"
+        >&#9776;</button>
+        <section class="file-manager">
+            <h1 v-t="'header.title'" class="app__title"></h1>
+            <p class="app__description">
+                {{ $t('header.description', { title: $t( "header.title" )}) }} <a href="https://github.com/igorski/pixelizer" target="_blank">GitHub</a>
+            </p>
+            <button
+                type="button"
+                class="select-button"
+                v-t="'header.selectFile'"
+                @click="openFileSelector()"
+            ></button>
+            <button
+                type="button"
+                class="download-button"
+                :disabled="!hasImage"
+                v-t="'header.download'"
+                @click="downloadImage()"
+            ></button>
+            <input
+                type="file"
+                ref="fileInput"
+                accept="image/png,image/gif,image/jpeg"
+                style="display: none;"
+                @change="handleImageSelect( $event )"
+            />
+        </section>
+        <section class="app__controls">
+            <Settings
+                :has-image="hasImage"
+                v-model="settings"
+                @save="handleSave()"
+            />
+        </section>
     </div>
 </template>
 
@@ -113,6 +129,7 @@ export default {
             intervalFunction: IntervalFunction.THRESHOLD,
         },
         hasImage: false,
+        collapseMenu: true,
     }),
     watch: {
         settings: {
@@ -240,7 +257,7 @@ export default {
     height: 100%;
 }
 
-.app-ui__canvas canvas {
+.app__canvas canvas {
     box-shadow: 0 8px 8px rgba(0,0,0,.5);
 }
 </style>
@@ -248,19 +265,21 @@ export default {
 <style lang="scss">
 @import "@/styles/_mixins";
 
-$sideBarWidth: 370px;
-
-.app-ui {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    width: calc( 100% - $sideBarWidth );
-    min-height: 100%;
-
-    &__header {
-        padding: $spacing-small $spacing-medium;
-        box-sizing: border-box;
+.app {
+    &__canvas-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
         width: 100%;
+        min-height: 100%;
+    }
+
+    &__title {
+        margin: 0;
+    }
+
+    &__description {
+        font-size: 0.75em;
     }
 
     &__canvas-wrapper {
@@ -270,27 +289,61 @@ $sideBarWidth: 370px;
         align-items: center;
         flex-direction: row;
         overflow: hidden;
+
+        &--expanded {
+            @include mobile() {
+                width: 100%;
+            }
+        }
     }
 
     &__settings {
         position: fixed;
+        display: flex;
+        flex-direction: column;
         top: 0;
         right: 0;
-        width: $sideBarWidth;
+        width: 100%;
         height: 100%;
         border-left: 4px solid $color-4;
         box-sizing: border-box;
         padding: $spacing-medium $spacing-large;
+        background-color: #333;
+        user-select: none;
+        @include animate(right, 0.7s);
+
+        &--collapsed {
+            @include mobile() {
+                right: -100%;
+            }
+        }
+
+        &__collapse-btn {
+            @include button( false );
+            border-radius: 50%;
+            padding: $spacing-small ($spacing-medium - $spacing-xsmall);
+            position: fixed;
+            top: $spacing-small;
+            right: $spacing-small;
+        }
+    }
+
+    &__controls {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        background-color: #333;
+        flex: 1;
+        margin-top: $spacing-small;
+        overflow-y: scroll;
     }
 
     &__file-upload {
         display: flex;
         flex-direction: column;
         align-items: center;
+        max-width: 90%;
+        text-align: center;
+        margin: 0 auto;
     }
 
     &__image-placeholder {
@@ -309,6 +362,22 @@ $sideBarWidth: 370px;
 
     &__privacy-explanation {
         font-size: 0.85em;
+    }
+
+    @include large() {
+        $sideBarWidth: 370px;
+
+        &__canvas-wrapper {
+            width: calc( 100% - $sideBarWidth );
+        }
+        
+        &__settings {
+            width: $sideBarWidth;
+
+            &__collapse-btn {
+                display: none;
+            }
+        }
     }
 }
 

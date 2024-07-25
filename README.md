@@ -6,13 +6,17 @@ the pixel content according to controllable algorithms to provide a distorted ta
 Adapted from [Python code](https://github.com/satyarth/pixelsort) by Satyarth Mishra Sharma, which in turn was based on
 a [Processing script](https://github.com/kimasendorf/ASDFPixelSort) by Kim Asendorf.
 
+The UI is built using Vue, but the majority of the inner workings is pure TypeScript. There is some overlap in
+functionality with [BitMappery](https://github.com/igorski/bitmappery), but this is chosen to be a separate toy, at
+least for the time being.
+
 ## TODO
 
  * Create undo / redo
+ * Settings should be able to be serialized into a string (to append to filename on download)
  * Group settings field by function
  * Include "Edges" algorithm
  * Add loading of mask support
- * Mobile view
  * Add button to download image at original (high) resolution
 
 ## Project setup

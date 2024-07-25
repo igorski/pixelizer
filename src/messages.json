@@ -2,6 +2,7 @@
     "en": {
         "header": {
             "title": "Pixelizer",
+            "description": "{title} allows you to create glitchy images by resorting their pixel content. This trinket is free for use and fully open source.",
             "selectFile": "Select file",
             "download": "Download"
         },

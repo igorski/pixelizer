@@ -229,7 +229,7 @@ export default {
 @import "@/styles/_variables";
 @import "@/styles/_mixins";
 
-$labelWidth: 125px;
+$labelWidth: 135px;
 
 .input-wrapper {
     display: flex;
