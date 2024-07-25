@@ -69,8 +69,6 @@ export const pixelsort = ({ image, maskImage, intervalImage, randomness = 0, cha
         height : image.height,
     };
 
-    charLength *= orgSize.width; // for maximum width of source image
-
     if ( hasRotation ) {
         const { id } = image;
         const cached = getCachedRotation( id, angle );
@@ -98,6 +96,8 @@ export const pixelsort = ({ image, maskImage, intervalImage, randomness = 0, cha
         setCachedMask( image.width, image.height, angle, maskImage );
     }
     const maskData = maskImage.context.getImageData( 0, 0, maskImage.width, maskImage.height );
+    
+    charLength *= 400;//size.width; // for maximum width of source image
     
     const intervals = getIntervals( intervalFunction, {
         image,

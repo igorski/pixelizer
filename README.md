@@ -9,7 +9,6 @@ a [Processing script](https://github.com/kimasendorf/ASDFPixelSort) by Kim Asend
 ## TODO
 
  * Create undo / redo
- * Waves filter broken at higher resolutions ? (is it the rotation?)
  * Group settings field by function
  * Include "Edges" algorithm
  * Add loading of mask support
