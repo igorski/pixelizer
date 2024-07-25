@@ -64,8 +64,8 @@ export const pixelsort = ({ image, maskImage, intervalImage, randomness = 0, cha
 
     const hasRotation = ( angle % 360 ) !== 0;
     const orgSize = {
-        width: image.width,
-        height: image.height,
+        width  : image.width,
+        height : image.height,
     };
 
     charLength *= orgSize.width; // for maximum width of source image
@@ -108,7 +108,7 @@ export const pixelsort = ({ image, maskImage, intervalImage, randomness = 0, cha
     );
     
     if ( hasRotation ) {
-        output = cropCanvas( rotateCanvas( output, -angle ), orgSize.width, orgSize.height );
+        output = cropCanvas( rotateCanvas( output, -angle ), orgSize.width, orgSize.height, true );
     }
     return output;
 }

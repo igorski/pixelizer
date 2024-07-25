@@ -195,7 +195,7 @@ export default {
                 ({ canvas } = sortedImage );
             } catch ( e ) {
                 if ( this.$data.settings.angle === 0 ) {
-                    this.$data.settings.angle = 90;
+                    this.$data.settings.angle = 1;
                     return this.runFilter();
                 }
                 console.error( `Irrecoverable error occurred during sorting: ${e.message}`, e );
@@ -246,7 +246,7 @@ export default {
 <style lang="scss">
 @import "@/styles/_mixins";
 
-$sideBarWidth: 360px;
+$sideBarWidth: 370px;
 
 .app-ui {
     display: flex;

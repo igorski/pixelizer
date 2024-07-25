@@ -31,21 +31,7 @@ export const createCanvas = ( width: number, height: number, crisp = false ): Pi
     const context = canvas.getContext( "2d", { willReadFrequently: true });
 
     if ( crisp ) {
-        [ "-moz-crisp-edges", "-webkit-crisp-edges", "pixelated", "crisp-edges" ]
-        .forEach( style => {
-            // @ts-expect-error TS7015: Element implicitly has an 'any' type because index expression is not of type 'number'.
-            canvas.style[ "image-rendering" ] = style;
-        });
-
-        const props = [
-            "imageSmoothingEnabled",  "mozImageSmoothingEnabled",
-            "oImageSmoothingEnabled", "webkitImageSmoothingEnabled"
-        ];
-        
-        props.forEach( prop => {
-            // @ts-expect-error TS7053 expression of type 'string' can't be used to index type CanvasRenderingContext2D
-            if ( context[ prop ] !== undefined ) context[ prop ] = true;
-        });
+        removeAntiAlias( canvas, context );
     }
 
     return {
@@ -64,8 +50,12 @@ export const cloneCanvas = ( canvas: PixelCanvas ): PixelCanvas => {
     return output;
 };
 
-export const cropCanvas = ( canvas: PixelCanvas, width: number, height: number ): PixelCanvas => {
+export const cropCanvas = ( canvas: PixelCanvas, width: number, height: number, crisp = false ): PixelCanvas => {
     const output = createCanvas( width, height );
+
+    if ( crisp ) {
+        removeAntiAlias( output.canvas, output.context );
+    }
 
     const deltaX = canvas.width  / 2 - width / 2;
     const deltaY = canvas.height / 2 - height / 2;
@@ -112,7 +102,7 @@ export const imageToCanvas = ( image: { size: Size, image: HTMLImageElement } ):
 export const canvasToFile = ( canvas: HTMLCanvasElement, fileName: string ): void => {
     const snapshot = canvas!.toDataURL( "image/png" );
     const downloadLink = document.createElement( "a" );
-    downloadLink.setAttribute( "download", "generated.png" );
+    downloadLink.setAttribute( "download", fileName );
     downloadLink.setAttribute( "href", snapshot.replace(/^data:image\/png/, "data:application/octet-stream" ));
     downloadLink.click();
 };
@@ -161,3 +151,21 @@ export const setPixel = ( imageData: ImageData, x: number, y: number, pixel: Pix
 
     return true;
 };
+
+function removeAntiAlias( canvas: HTMLCanvasElement, context: CanvasRenderingContext2D ): void {
+    [ "-moz-crisp-edges", "-webkit-crisp-edges", "pixelated", "crisp-edges" ]
+        .forEach( style => {
+            // @ts-expect-error TS7015: Element implicitly has an 'any' type because index expression is not of type 'number'.
+            canvas.style[ "image-rendering" ] = style;
+        });
+
+    const props = [
+        "imageSmoothingEnabled",  "mozImageSmoothingEnabled",
+        "oImageSmoothingEnabled", "webkitImageSmoothingEnabled"
+    ];
+    
+    props.forEach( prop => {
+        // @ts-expect-error TS7053 expression of type 'string' can't be used to index type CanvasRenderingContext2D
+        if ( context[ prop ] !== undefined ) context[ prop ] = true;
+    });
+}

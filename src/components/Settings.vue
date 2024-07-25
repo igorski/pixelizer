@@ -201,6 +201,13 @@ export default {
             }));
         },
     },
+    watch: {
+        'internalValue.angle'( angle: number ): void {
+            if ( angle < -360 || angle > 360 ) {
+                this.internalValue.angle = angle % 360;
+            }
+        },
+    },
     methods: {
         randomize(): void {
             this.internalValue.angle = randomFromList([ 0, 90, 180, 270 ]);
@@ -277,6 +284,13 @@ $labelWidth: 125px;
             cursor: pointer;
         }
     }
+}
+
+#inputAngle {
+    flex: 0;
+    width: $spacing-large;
+    border-radius: $spacing-small;
+    padding: $spacing-small $spacing-medium;
 }
 
 .settings-button {
