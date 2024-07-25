@@ -23,18 +23,21 @@
 import type { Size } from "zcanvas";
 import type { PixelCanvas, Pixel } from "@/definitions/types";
 
+let instanceId = 0;
+
 export const createCanvas = ( width: number, height: number, crisp = false ): PixelCanvas => {
     const canvas  = document.createElement( "canvas" );
     canvas.width  = width;
     canvas.height = height;
 
-    const context = canvas.getContext( "2d", { willReadFrequently: true });
+    const context = canvas.getContext( "2d", { willReadFrequently: true })!;
 
     if ( crisp ) {
         removeAntiAlias( canvas, context );
     }
 
     return {
+        id: ( ++instanceId ).toString(),
         canvas,
         context,
         width,
@@ -84,6 +87,7 @@ export const rotateCanvas = ( canvas: PixelCanvas, angle: number ): PixelCanvas 
     rotatedContext.drawImage( canvas.canvas, -width / 2, -height / 2 );
 
     return {
+        id: ( ++instanceId ).toString(),
         canvas: rotatedCanvas,
         context: rotatedContext,
         width: rotatedWidth,

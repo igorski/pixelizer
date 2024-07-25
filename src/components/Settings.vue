@@ -43,7 +43,7 @@
             <input
                 type="range"
                 min="0"
-                max="360"
+                max="359"
                 step="1"
                 v-model.number="internalValue.angle"
             />

@@ -20,27 +20,29 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import type { Size } from "zcanvas";
-import type { IntervalFunction } from "@/filters/sorter/interval";
-import type { SortingType } from "@/filters/sorter/sorting";
+import type { PixelCanvas } from "@/definitions/types";
 
-export interface SortSettings {
-    width: number;
-    height: number;
+type CachedCanvas = {
+    id: string; // id of source Canvas used to create the cached version of a resized/rotated canvas
     angle: number;
-    randomness: number; // normalized 0 - 1
-    charLength: number; // normalized 0 - 1
-    lowerThreshold: number; // normalized 0 - 1
-    upperThreshold: number; // normalized 0 - 1
-    sortingFunction: SortingType;
-    intervalFunction: IntervalFunction;
+    canvas: PixelCanvas;
 };
 
-export type Pixel = [ number, number, number, number ]; // RGBA value
-export type PixelList = Pixel[];
+type Cache = {
+    rotation: CachedCanvas | undefined;
+};
 
-export type PixelCanvas = Size & {
-    id: string;
-    canvas: HTMLCanvasElement;
-    context: CanvasRenderingContext2D;
+const canvasCache: Cache = {
+    rotation: undefined,
+};
+
+export const getCachedRotation = ( id: string, angle: number ): PixelCanvas | undefined => {
+    if ( id === canvasCache.rotation?.id && angle === canvasCache.rotation?.angle ) {
+        return canvasCache.rotation.canvas;
+    }
+    return undefined;
+};
+
+export const setCachedRotation = ( id: string, angle: number, canvas: PixelCanvas ): void => {
+    canvasCache.rotation = { id, angle, canvas };
 };
