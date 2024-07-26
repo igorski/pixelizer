@@ -10,12 +10,17 @@ The UI is built using Vue, but the majority of the inner workings is pure TypeSc
 functionality with [BitMappery](https://github.com/igorski/bitmappery), but this is chosen to be a separate toy, at
 least for the time being.
 
+## The [Issue Tracker](https://github.com/igorski/pixelizer/issues) is your point of contact
+
+Bug reports, feature requests, questions and discussions are welcome on the GitHub Issue Tracker, please do not send e-mails through the development website. However, please search before posting to avoid duplicates, and limit to one issue per post.
+
+Please vote on feature requests by using the Thumbs Up/Down reaction on the first post.
+
 ## TODO
 
- * Filters do not work full width of on landscape images when angle is at exactly 90 degrees
  * Include "Edges" algorithm
  * Add loading of mask support
- * Add button to download image at original (high) resolution
+ * Filters do not work full width of on landscape images when angle is at exactly 90 degrees
 
 ## Project setup
 

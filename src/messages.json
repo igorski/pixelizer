@@ -7,7 +7,7 @@
             "download": "Download"
         },
         "main": {
-            "fileSelectExplanation": "Select or drag an image file ( JPG, PNG, GIF ) into this window to get started",
+            "fileSelectExplanation": "Select or drag an image file ( JPG, PNG, GIF, WEBP ) here to get started",
             "privacy": "Your images will load into your browser's memory for this session and will not be uploaded anywhere."
         },
         "settings": {

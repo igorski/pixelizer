@@ -30,12 +30,12 @@ export const PNG : ImageType = { mime: "image/png",  ext: "png" };
 export const GIF : ImageType = { mime: "image/gif",  ext: "gif" };
 export const WEBP: ImageType = { mime: "image/webp", ext: "webp" };
 
-export const ALL_IMAGE_TYPES = [ JPEG, PNG, GIF/*, WEBP*/ ];
+export const ALL_IMAGE_TYPES = [ JPEG, PNG, GIF, WEBP ];
 
 // 2. all image formats supported by all supported platforms
 
-export const ACCEPTED_IMAGE_TYPES      = [ JPEG.mime, PNG.mime, GIF.mime ];
-export const ACCEPTED_IMAGE_EXTENSIONS = [ JPEG.ext, "jpeg", PNG.ext, GIF.ext ];
+export const ACCEPTED_IMAGE_TYPES      = [ JPEG.mime, PNG.mime, GIF.mime, WEBP.mime ];
+export const ACCEPTED_IMAGE_EXTENSIONS = [ JPEG.ext, "jpeg", PNG.ext, GIF.ext, WEBP.ext ];
 
 export const handleFileDrag = ( event: Event ): void => {
     event.stopPropagation();
