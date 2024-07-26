@@ -26,7 +26,7 @@ import type { IntervalFunction } from "@/filters/sorter/interval";
 
 export const settingToString = ( setting: SortSettings ): string => {
     const { width, height, angle, randomness, charLength, lowerThreshold, upperThreshold, sortingType, intervalFunction } = setting;
-    return `a${angle}_l${lowerThreshold}_u${upperThreshold}_r${randomness}_s${sortingType}_i${intervalFunction}_c${charLength}_w${width}_h${height}`;
+    return `a${angle}_l${lowerThreshold.toFixed(2)}_u${upperThreshold.toFixed(2)}_r${randomness.toFixed(2)}_s${sortingType}_i${intervalFunction}_c${charLength.toFixed(2)}_w${width}_h${height}`;
 };
 
 export const stringToSetting = ( string: string ): SortSettings => {

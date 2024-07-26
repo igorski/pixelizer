@@ -31,14 +31,14 @@
                     class="settings__history__button"
                     v-tooltip="$t('settings.description.undo')"
                     @click="handleUndo()"
-                >&#8617;</button>
+                >&#8678;</button>
                 <button
                     :title="$t('settings.redo')"
                     :disabled="!canRedo"
                     class="settings__history__button"
                     v-tooltip="$t('settings.description.redo')"
                     @click="handleRedo()"
-                >&#8618;</button>
+                >&#8680;</button>
             </div>
         </div>
         
@@ -67,12 +67,14 @@
                 max="359"
                 step="1"
                 v-model.number="internalValue.angle"
+                @change="saveState()"
             />
         </div>
         <div class="input-wrapper input-wrapper--no-label">
             <input
                 id="inputAngle"
                 v-model.number="internalValue.angle"
+                @change="saveState()"
             />
         </div>
         <div class="input-wrapper">
@@ -88,6 +90,7 @@
                 max="1"
                 step="0.01"
                 v-model.number="internalValue.randomness"
+                @change="saveState()"
             />
         </div>
         <div class="input-wrapper">
@@ -103,6 +106,7 @@
                 max="1"
                 step="0.01"
                 v-model.number="internalValue.lowerThreshold"
+                @change="saveState()"
             />
         </div>
         <div class="input-wrapper">
@@ -118,6 +122,7 @@
                 max="1"
                 step="0.01"
                 v-model.number="internalValue.upperThreshold"
+                @change="saveState()"
             />
         </div>
         <div class="input-wrapper input-wrapper--select">
@@ -129,6 +134,7 @@
             <select
                 id="inputSortingType"
                 v-model="internalValue.sortingType"
+                @change="saveState()"
             >
                 <option
                     v-for="option in sortingOptions"
@@ -146,6 +152,7 @@
             <select
                 id="inputIntervalFunction"
                 v-model="internalValue.intervalFunction"
+                @change="saveState()"
             >
                 <option
                     v-for="option in intervalOptions"
@@ -170,6 +177,7 @@
                 max="1"
                 step="0.01"
                 v-model.number="internalValue.charLength"
+                @change="saveState()"
             />
         </div>
     </section>
@@ -181,7 +189,7 @@
             v-tooltip="$t('settings.description.randomize')"
         ></button>
         <button
-            @click="save()"
+            @click="saveImage()"
             class="save-button"
             :disabled="!hasImage"
             v-t="'settings.useAsBase'"
@@ -222,7 +230,7 @@ export default {
             default: false,
         },
     },
-    emits: [ "update:modelValue", "restore", "save" ],
+    emits: [ "update:modelValue", "restore", "save-image", "save-state" ],
     computed: {
         ...mapState( useHistoryStore, [
             "canUndo",
@@ -289,10 +297,15 @@ export default {
             this.internalValue.upperThreshold = Math.random();
             this.internalValue.sortingType = randomFromList( SORTING_TYPES );
             this.internalValue.intervalFunction = randomFromList( INTERVAL_FNS );
+
+            this.saveState();
         },
-        save(): void {
-            this.$emit( "save" );
+        saveImage(): void {
+            this.$emit( "save-image" );
             this.clearHistory();
+        },
+        saveState(): void {
+            this.$emit( "save-state" );
         },
         handleUndo(): void {
             if ( this.canUndo ) {
@@ -326,22 +339,23 @@ $labelWidth: 135px;
 
         &__button {
             cursor: pointer;
-            border-radius: 50%;
+            border-radius: $spacing-xsmall;
             background-color: transparent;
             border: 2px solid $color-2;
             color: $color-1;
-            // font-size: 1em;
+            font-size: 1em;
             padding: $spacing-xsmall ($spacing-medium - $spacing-small);
             vertical-align: middle;
             margin-left: $spacing-small;
 
             &:hover {
-                color: $color-4;
+                border-color: $color-1;
             }
 
             &:disabled {
                 cursor: initial !important;
-                color: initial !important;
+                color: $color-2 !important;
+                border-color: $color-2 !important;
                 background-color: transparent !important;
             }
         }

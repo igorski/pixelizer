@@ -84,7 +84,8 @@
                 :has-image="hasImage"
                 v-model="settings"
                 @restore="restoreState( $event )"
-                @save="handleSave()"
+                @save-image="saveImage()"
+                @save-state="saveState()"
             />
         </section>
     </div>
@@ -116,7 +117,6 @@ let canvas: HTMLCanvasElement | undefined;
 let fileName: string | undefined;
 let lastWidth = 0;
 let lastHeight = 0;
-let blockSave = true; // prevents re-saving when stepping through history states
 
 export default {
     components: {
@@ -146,11 +146,6 @@ export default {
                 } else {
                     this.debouncedFilter();
                 }
-                if ( !blockSave ) {
-                    this.debouncedSave();
-                } else {
-                    blockSave = false;
-                }
             }
         }
     },
@@ -167,7 +162,6 @@ export default {
 
         this.debouncedResize = debounce( this.resizeSource.bind( this ), 16 );
         this.debouncedFilter = debounce( this.runFilter.bind( this ), 16 );
-        this.debouncedSave   = debounce( this.saveState.bind( this ), 1000 );
     },
     methods: {
         ...mapActions( useHistoryStore, [
@@ -251,7 +245,7 @@ export default {
             this.$data.settings.width  = scaledValue;
             this.$data.settings.height = scaledValue;
         },
-        handleSave(): void {
+        saveImage(): void {
             // this.runFilter( true ); // only if we want to apply onto the (large) original image
             loadedImage = sortedImage;
             this.resizeSource();
@@ -261,7 +255,6 @@ export default {
             canvasToFile( canvas, `${fileName}_${settingToString(this.$data.settings)}_.png`, window.devicePixelRatio );
         },
         restoreState( settings: SortSettings ): void {
-            blockSave = true;
             this.$data.settings = settings;
         },
         saveState(): void {
@@ -360,7 +353,7 @@ export default {
         justify-content: space-between;
         flex: 1;
         margin-top: $spacing-small;
-        overflow-y: scroll;
+        overflow-y: auto;
     }
 
     &__file-upload {
