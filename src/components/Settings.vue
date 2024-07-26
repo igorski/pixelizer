@@ -208,7 +208,7 @@ import { useHistoryStore } from "@/store/history";
 import { randomFromList } from "@/utils/random";
 
 const SORTING_TYPES = [ SortingType.HUE, SortingType.INTENSITY, SortingType.LIGHTNESS, SortingType.MINIMUM, SortingType.SATURATION ];
-const INTERVAL_FNS  = [ IntervalFunction.NONE, /*IntervalFunction.EDGES, */IntervalFunction.RANDOM, IntervalFunction.THRESHOLD, IntervalFunction.WAVES ];
+const INTERVAL_FNS  = [ IntervalFunction.NONE, IntervalFunction.EDGES, IntervalFunction.RANDOM, IntervalFunction.THRESHOLD, IntervalFunction.WAVES ];
 
 const CHAR_LENGTH_SUPPORTING_INTERVALS = [
     IntervalFunction.RANDOM, IntervalFunction.WAVES

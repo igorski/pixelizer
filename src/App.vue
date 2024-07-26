@@ -74,7 +74,7 @@
             <input
                 type="file"
                 ref="fileInput"
-                accept="image/png,image/gif,image/jpeg"
+                :accept="acceptedFileTypes"
                 style="display: none;"
                 @change="handleImageSelect( $event )"
             />
@@ -103,7 +103,7 @@ import { flushCaches } from "@/filters/sorter/cache";
 import { SortingType } from "@/filters/sorter/sorting";
 import { useHistoryStore } from "@/store/history";
 import { imageToCanvas, canvasToFile, resizeImage } from "@/utils/canvas";
-import { handleFileDrag, handleFileDrop } from "@/utils/file";
+import { ACCEPTED_IMAGE_TYPES, handleFileDrag, handleFileDrop, } from "@/utils/file";
 import { settingToString } from "@/utils/string";
 import { constrainAspectRatio } from "@/utils/math";
 import "floating-vue/dist/style.css";
@@ -136,6 +136,7 @@ export default {
         },
         hasImage: false,
         collapseMenu: true,
+        acceptedFileTypes: ACCEPTED_IMAGE_TYPES.join( "," ),
     }),
     watch: {
         settings: {

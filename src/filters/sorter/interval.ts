@@ -23,6 +23,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 import { PixelCanvas } from "@/definitions/types";
+import { findEdges } from "@/filters/edges";
 import { lightness } from "@/filters/sorter/sorting";
 import { getPixel } from "@/utils/canvas";
 import { randInt } from "@/utils/random";
@@ -34,7 +35,7 @@ export enum IntervalFunction {
     THRESHOLD = "threshold",
     WAVES = "waves",
     NONE = "none",
-    // EDGES = "edges",
+    EDGES = "edges",
 };
 
 interface IntervalProps {
@@ -55,24 +56,24 @@ export const getIntervals = ( fn: IntervalFunction, props: IntervalProps ): Inte
             return threshold( props );
         case IntervalFunction.WAVES:
             return waves( props );
-        // case IntervalFunction.EDGE:
-        //    return edge( props );
+        case IntervalFunction.EDGES:
+            return edges( props );
     }
 };
 
-/*
-function edge({ image, lowerThreshold }: IntervalProps ): IntervalList {
-    const edgeData = image.filter(ImageFilter.FIND_EDGES).convert('RGBA').load()
+function edges({ image, lowerThreshold }: IntervalProps ): IntervalList {
+    const edgeData = findEdges( image );
     const intervals: IntervalList = [];
 
     const { width, height } = image;
+    const scaledThreshold = lowerThreshold * 255;
 
     for ( let y = 0; y < height; ++y ) {
         intervals.push( [] );
         let flag = true;
 
         for ( let x = 0; x < width; ++x ) {
-            if ( lightness( getPixel( edgeData, x, y )) > lowerThreshold * 255 ) {
+            if ( lightness( getPixel( edgeData, x, y )) > scaledThreshold ) {
                 flag = true;
             } else if ( flag ) {
                 intervals[ y ].push( x );
@@ -81,7 +82,7 @@ function edge({ image, lowerThreshold }: IntervalProps ): IntervalList {
         }
     }
     return intervals;
-}*/
+}
 
 function random({ image, charLength }: IntervalProps ): IntervalList {
     const { width, height } = image;

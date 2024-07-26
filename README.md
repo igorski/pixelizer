@@ -18,7 +18,6 @@ Please vote on feature requests by using the Thumbs Up/Down reaction on the firs
 
 ## TODO
 
- * Include "Edges" algorithm
  * Add loading of mask support
  * Filters do not work full width of on landscape images when angle is at exactly 90 degrees
 
