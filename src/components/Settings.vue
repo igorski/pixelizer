@@ -354,6 +354,8 @@ export default {
 $labelWidth: 135px;
 
 .settings {
+    margin-bottom: $spacing-small;
+    
     &__header {
         position: relative;
     }

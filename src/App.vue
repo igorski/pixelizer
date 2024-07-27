@@ -49,44 +49,48 @@
             'app__settings--collapsed': collapseMenu
         }"
     >
-        <button
-            class="app__settings__collapse-btn"
-            @click="collapseMenu = !collapseMenu"
-        >&#9776;</button>
-        <section class="app__settings__file-manager">
+        <section class="app__settings__header">
             <h1 v-t="'header.title'" class="app__title"></h1>
-            <p class="app__description">
-                {{ $t('header.description', { title: $t( "header.title" )}) }} <a href="https://github.com/igorski/pixelizer" target="_blank">GitHub</a>
-            </p>
             <button
-                type="button"
-                class="select-button"
-                v-t="'header.selectFile'"
-                @click="openFileSelector()"
-            ></button>
-            <button
-                type="button"
-                class="download-button"
-                :disabled="!hasImage"
-                v-t="'header.download'"
-                @click="downloadImage()"
-            ></button>
-            <input
-                type="file"
-                ref="fileInput"
-                :accept="acceptedFileTypes"
-                style="display: none;"
-                @change="handleImageSelect( $event )"
-            />
+                class="app__settings__collapse-btn"
+                @click="collapseMenu = !collapseMenu"
+            >&#9776;</button>
         </section>
-        <section class="app__controls">
-            <Settings
-                :has-image="hasImage"
-                v-model="settings"
-                @restore="restoreState( $event )"
-                @save-image="saveImage()"
-                @save-state="saveState()"
-            />
+        <section class="app__settings__body">
+            <section class="app__settings__file-manager">
+                <p class="app__description">
+                    {{ $t('header.description', { title: $t( "header.title" )}) }} <a href="https://github.com/igorski/pixelizer" target="_blank">GitHub</a>
+                </p>
+                <button
+                    type="button"
+                    class="select-button"
+                    v-t="'header.selectFile'"
+                    @click="openFileSelector()"
+                ></button>
+                <button
+                    type="button"
+                    class="download-button"
+                    :disabled="!hasImage"
+                    v-t="'header.download'"
+                    @click="downloadImage()"
+                ></button>
+                <input
+                    type="file"
+                    ref="fileInput"
+                    :accept="acceptedFileTypes"
+                    style="display: none;"
+                    @change="handleImageSelect( $event )"
+                />
+            </section>
+            <section class="app__controls">
+                <Settings
+                    :has-image="hasImage"
+                    v-model="settings"
+                    @restore="restoreState( $event )"
+                    @save-image="saveImage()"
+                    @save-state="saveState()"
+                />
+            </section>
         </section>
     </div>
 </template>
@@ -272,11 +276,14 @@ export default {
 
 .app__canvas canvas {
     box-shadow: 0 8px 8px rgba(0,0,0,.5);
+    max-width: 100%;
 }
 </style>
 
 <style lang="scss">
 @import "@/styles/_mixins";
+
+$sideBarWidth: 370px;
 
 .app {
     &__canvas-wrapper {
@@ -303,6 +310,10 @@ export default {
         flex-direction: row;
         overflow: hidden;
 
+        @include large() {
+            width: calc( 100% - $sideBarWidth );
+        }
+
         &--expanded {
             @include mobile() {
                 width: 100%;
@@ -318,30 +329,57 @@ export default {
         right: 0;
         width: 100%;
         height: 100%;
-        border-left: 4px solid $color-4;
         box-sizing: border-box;
         padding: $spacing-medium $spacing-large;
         background-color: #333;
         user-select: none;
-        @include animate(right, 0.7s);
+        @include animate(top, 0.25s);
 
-        &--collapsed {
-            @include mobile() {
-                right: -100%;
-            }
+        &__body {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
         &__collapse-btn {
-            @include button( false );
             border-radius: 50%;
+            border: 2px solid $color-4;
+            color: $color-1;
+            background-color: transparent;
             padding: $spacing-small ($spacing-medium - $spacing-xsmall);
-            position: fixed;
-            top: $spacing-small;
-            right: $spacing-small;
+            position: absolute;
+            top: $spacing-medium;
+            right: $spacing-medium;
         }
 
         &__file-manager button {
             margin-right: $spacing-small;
+        }
+
+        @include large() {
+            width: $sideBarWidth;
+            border-left: 4px solid $color-4;
+        
+            &__collapse-btn {
+                display: none;
+            }
+
+            &__body {
+                overflow-y: auto;
+            }
+        }
+
+        @include mobile() {
+            border-top: 4px solid $color-4;
+            background-color: rgba(0,0,0,.75);
+            
+            &__body {
+                overflow-y: auto;
+            }
+
+            &--collapsed {
+                top: calc(100% - 72px);
+            }   
         }
     }
 
@@ -351,7 +389,6 @@ export default {
         justify-content: space-between;
         flex: 1;
         margin-top: $spacing-small;
-        overflow-y: auto;
     }
 
     &__file-upload {
@@ -380,22 +417,6 @@ export default {
     &__privacy-explanation {
         margin-top: $spacing-medium;
         font-size: 0.85em;
-    }
-
-    @include large() {
-        $sideBarWidth: 370px;
-
-        &__canvas-wrapper {
-            width: calc( 100% - $sideBarWidth );
-        }
-        
-        &__settings {
-            width: $sideBarWidth;
-
-            &__collapse-btn {
-                display: none;
-            }
-        }
     }
 }
 
