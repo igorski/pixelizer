@@ -53,7 +53,7 @@
             class="app__settings__collapse-btn"
             @click="collapseMenu = !collapseMenu"
         >&#9776;</button>
-        <section class="file-manager">
+        <section class="app__settings__file-manager">
             <h1 v-t="'header.title'" class="app__title"></h1>
             <p class="app__description">
                 {{ $t('header.description', { title: $t( "header.title" )}) }} <a href="https://github.com/igorski/pixelizer" target="_blank">GitHub</a>
@@ -96,19 +96,18 @@ import debounce from "lodash.debounce";
 import { mapActions } from "pinia";
 import { Loader } from "zcanvas";
 import Settings from "@/components/Settings.vue";
+import { EXECUTION_BUDGET, MAX_IMAGE_SIZE, ACCEPTED_IMAGE_TYPES } from "@/definitions/config";
 import type { PixelCanvas, SortSettings } from "@/definitions/types";
-import { pixelsort } from "@/filters/pixel-sorter";
 import { IntervalFunction } from "@/filters/sorter/interval";
 import { flushCaches } from "@/filters/sorter/cache";
 import { SortingType } from "@/filters/sorter/sorting";
+import { applyFilters } from "@/services/render-service";
 import { useHistoryStore } from "@/store/history";
 import { imageToCanvas, canvasToFile, resizeImage } from "@/utils/canvas";
-import { ACCEPTED_IMAGE_TYPES, handleFileDrag, handleFileDrop, } from "@/utils/file";
+import { handleFileDrag, handleFileDrop, } from "@/utils/file";
 import { settingToString } from "@/utils/string";
 import { constrainAspectRatio } from "@/utils/math";
 import "floating-vue/dist/style.css";
-
-const MAX_IMAGE_SIZE = 1000;
 
 let loadedImage: PixelCanvas | undefined;
 let resizedImage: PixelCanvas | undefined;
@@ -145,7 +144,7 @@ export default {
                 if ( data.width !== lastWidth || data.height !== lastHeight ) {
                     this.debouncedResize();
                 } else {
-                    this.debouncedFilter();
+                    this.runFilter();
                 }
             }
         }
@@ -161,8 +160,7 @@ export default {
         
         this.handleResize();
 
-        this.debouncedResize = debounce( this.resizeSource.bind( this ), 16 );
-        this.debouncedFilter = debounce( this.runFilter.bind( this ), 16 );
+        this.debouncedResize = debounce( this.resizeSource.bind( this ), EXECUTION_BUDGET );
     },
     methods: {
         ...mapActions( useHistoryStore, [
@@ -215,27 +213,22 @@ export default {
 
             this.runFilter();
         },
-        runFilter( hiRes = false ): void {
-            if ( resizedImage === undefined ) {
-                return;
-            }
-            const { width, height, ...settings } = this.$data.settings;
-
-            if ( canvas?.parentNode ) {
-                this.$refs.canvasContainer.removeChild( canvas );
-            }
+        async runFilter( hiRes = false ): Promise<void> {
+            let filteredImage: PixelCanvas;
             try {
-                sortedImage = pixelsort({
-                    image: hiRes ? loadedImage : resizedImage,
-                    ...settings,
-                });
-                ({ canvas } = sortedImage );
-            } catch ( e ) {
-                console.error( `Irrecoverable error occurred during sorting: ${e.message}`, e );
+                filteredImage = await applyFilters( hiRes ? loadedImage : resizedImage, this.$data.settings );
+            } catch {
+                return; // job was rejected (as a newer request has come in)
             }
-            // @todo use zCanvas and pool a Sprite
-            if ( !hiRes ) {
-                this.$refs.canvasContainer.appendChild( canvas );
+            
+            if ( filteredImage ) {
+                if ( canvas?.parentNode ) {
+                    this.$refs.canvasContainer.removeChild( canvas ); // remove previous image
+                }
+                ({ canvas } = filteredImage );
+                if ( !hiRes ) {
+                    this.$refs.canvasContainer.appendChild( canvas ); // @todo use zCanvas and Sprite pooling instead ?
+                }
             }
         },
         handleResize(): void {
@@ -345,6 +338,10 @@ export default {
             position: fixed;
             top: $spacing-small;
             right: $spacing-small;
+        }
+
+        &__file-manager button {
+            margin-right: $spacing-small;
         }
     }
 

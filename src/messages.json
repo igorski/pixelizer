@@ -22,6 +22,7 @@
             "useAsBase": "Use as base",
             "description": {
                 "angle": "Angle (in degrees) determining the sorting direction",
+                "quarterTurn": "Rotate in 90 degree increments",
                 "randomness": "Percentage of pixels NOT to sort (0% = fully sorted, 100% = no sorting)",
                 "charLength": "Characteristic length for the randomized width generation",
                 "sortingType": "The algorithm used to sort the pixels",

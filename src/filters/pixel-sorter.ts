@@ -30,6 +30,7 @@ import { getIntervals, IntervalFunction } from "@/filters/sorter/interval";
 import { sortImage } from "@/filters/sorter/sorter";
 import { getSortingFunctionByType, SortingType } from "@/filters/sorter/sorting";
 import { createCanvas, cloneCanvas, cropCanvas, rotateCanvas, getPixel, setPixel } from "@/utils/canvas";
+import { prepare, waitWhenBusy } from "@/utils/rafDebounce";
 
 interface PixelSortParams {
     image: PixelCanvas;
@@ -44,9 +45,23 @@ interface PixelSortParams {
     angle?: number;
 }
 
-export const pixelsort = ({ image, maskImage, intervalImage, randomness = 0, charLength = 0.5,
+/**
+ * The main render function.
+ * 
+ * It is asynchronous and has multiple waiting steps in between (potentially) heavy functions with a long
+ * execution time. It will wait until the next animationFrame if the allowed time budget has expired.
+ * 
+ * Would it make sense to do this in a Worker / use OfflineScreenCanvas ?
+ * That would be an improvement that frees up the main execution stack. However, this function requires
+ * creation of multiple Canvas elements and Contexts (with different aliasing options) which are not
+ * available inside Workers. Arguably relying solely on ImageData would work, but complicates the current
+ * use of cached rotations and masks.
+ */
+export const pixelsort = async ({ image, maskImage, intervalImage, randomness = 0, charLength = 0.5,
     sortingType = SortingType.LIGHTNESS, intervalFunction = IntervalFunction.THRESHOLD,
-    lowerThreshold = 0.25, upperThreshold = 0.8, angle = 0 }: PixelSortParams ): PixelCanvas => {
+    lowerThreshold = 0.25, upperThreshold = 0.8, angle = 0 }: PixelSortParams ): Promise<PixelCanvas> => {
+
+    prepare(); // prepares the time budget
 
     const hasRotation = ( angle % 360 ) !== 0;
     const orgSize = {
@@ -81,8 +96,13 @@ export const pixelsort = ({ image, maskImage, intervalImage, randomness = 0, cha
         setCachedMask( image.width, image.height, angle, maskImage );
     }
     const maskData = maskImage.context.getImageData( 0, 0, maskImage.width, maskImage.height );
+
+    await waitWhenBusy(); // wait in case previous executions have exceeded the time budget
     
+    // scale values
     charLength = Math.round( charLength * 400 );//size.width; // for maximum width of source image
+    lowerThreshold *= 255;
+    upperThreshold *= 255;
     
     const intervals = getIntervals( intervalFunction, {
         image,
@@ -92,6 +112,8 @@ export const pixelsort = ({ image, maskImage, intervalImage, randomness = 0, cha
         intervalImage,
     });
 
+    await waitWhenBusy(); // wait in case previous executions have exceeded the time budget
+
     const sortedPixels = sortImage({
         size,
         imageData,
@@ -100,6 +122,8 @@ export const pixelsort = ({ image, maskImage, intervalImage, randomness = 0, cha
         randomness,
         sortingFunction: getSortingFunctionByType( sortingType )
     });
+
+    await waitWhenBusy(); // wait in case previous executions have exceeded the time budget
 
     let output = placePixels(
         sortedPixels,

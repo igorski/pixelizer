@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Igor Zinken 2020-2024 - https://www.igorski.nl
+ * Igor Zinken 2024 - https://www.igorski.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,23 +20,39 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import { ACCEPTED_IMAGE_TYPES } from "@/definitions/config";
+import { EXECUTION_BUDGET } from "@/definitions/config";
 
-export const handleFileDrag = ( event: Event ): void => {
-    event.stopPropagation();
-    event.preventDefault();
-    // @ts-expect-error dataTransfer unknown type
-    event.dataTransfer.dropEffect = "copy";
+let startTime = 0;
+
+/**
+ * Call before a series of heavy operations to set the start time
+ */
+export const prepare = (): void => {
+    startTime = window.performance.now();
 };
 
-export const handleFileDrop = ( event: Event ): File | undefined => {
-    event.preventDefault();
-    event.stopPropagation();
+/**
+ * Await this function in between heavy operations to determine
+ * whether there is still time to continue or whether to wait
+ * for a single RAF to unblock UI rendering.
+ * 
+ * If there is no time left, this will await the next animationFrame
+ * before resolving, otherwise this return immediately without stalling execution.
+ */
+export const waitWhenBusy = async (): Promise<void> => {
+    const now = window.performance.now();
+    const elapsed = now - startTime;
 
-    // @ts-expect-error Type 'FileList' is not an array type (but it destructures just fine...)
-    const items = event.dataTransfer ? [ ...event.dataTransfer.files ] : [];
-    // @ts-expect-error
-    const [ file ] = items.filter( file => ACCEPTED_IMAGE_TYPES.includes( file.type ));
+    if ( elapsed > EXECUTION_BUDGET ) {
+        return waitRaf();
+    }
+};
 
-    return file;
+async function waitRaf(): Promise<void> {
+    return new Promise( resolve => {
+        window.requestAnimationFrame( time => {
+            startTime = time;
+            resolve();
+        });
+    });
 }

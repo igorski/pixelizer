@@ -82,8 +82,8 @@
 @mixin button( $primary: true ) {
     cursor: pointer;
     padding: $spacing-small $spacing-medium;
-    border-radius: $spacing-medium;
-    border: 3px solid $color-2;
+    border-radius: $spacing-small;
+    border: none;
     color: #FFF;
     font-weight: bold;
     user-select: none;
@@ -107,5 +107,29 @@
         cursor: default;
         background-color: dimgrey !important;
         color: linen !important;
+    }
+}
+
+@mixin smallButton( $fontSize: 1em, $padding: $spacing-xsmall ( $spacing-medium - $spacing-small )) {
+    cursor: pointer;
+    border-radius: $spacing-xsmall;
+    background-color: transparent;
+    border: 2px solid $color-2;
+    color: $color-1;
+    font-size: $fontSize;
+    padding: $padding;
+    vertical-align: middle;
+    margin-left: $spacing-xsmall;
+
+    &:hover {
+        background-color: $color-1;
+        color: $color-2;
+    }
+
+    &:disabled {
+        cursor: initial !important;
+        color: $color-2 !important;
+        border-color: $color-2 !important;
+        background-color: transparent !important;
     }
 }

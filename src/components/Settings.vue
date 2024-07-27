@@ -76,6 +76,12 @@
                 v-model.number="internalValue.angle"
                 @change="saveState()"
             />
+            <button
+                :title="$t('settings.description.quarterTurn')"
+                class="rotate-button"
+                v-tooltip="$t('settings.description.quarterTurn')"
+                @click="quarterTurn()"
+            >&#10561;</button>
         </div>
         <div class="input-wrapper">
             <label
@@ -90,38 +96,6 @@
                 max="1"
                 step="0.01"
                 v-model.number="internalValue.randomness"
-                @change="saveState()"
-            />
-        </div>
-        <div class="input-wrapper">
-            <label
-                for="inputLowerThreshold"
-                v-t="'settings.lowerThreshold'"
-                v-tooltip.left="$t('settings.description.lowerThreshold')"
-            ></label>
-            <input
-                id="inputLowerThreshold"
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                v-model.number="internalValue.lowerThreshold"
-                @change="saveState()"
-            />
-        </div>
-        <div class="input-wrapper">
-            <label
-                for="inputUpperThreshold"
-                v-t="'settings.upperThreshold'"
-                v-tooltip.left="$t('settings.description.upperThreshold')"
-            ></label>
-            <input
-                id="inputUpperThreshold"
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                v-model.number="internalValue.upperThreshold"
                 @change="saveState()"
             />
         </div>
@@ -161,10 +135,41 @@
                 >{{ option.title }}</option>
             </select>
         </div>
-        <div
-            v-if="supportsCharLength"
-            class="input-wrapper"
-        >
+        <div class="input-wrapper">
+            <label
+                for="inputLowerThreshold"
+                v-t="'settings.lowerThreshold'"
+                v-tooltip.left="$t('settings.description.lowerThreshold')"
+            ></label>
+            <input
+                id="inputLowerThreshold"
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                v-model.number="internalValue.lowerThreshold"
+                :disabled="!supportsThreshold"
+                @change="saveState()"
+            />
+        </div>
+        <div class="input-wrapper">
+            <label
+                for="inputUpperThreshold"
+                v-t="'settings.upperThreshold'"
+                v-tooltip.left="$t('settings.description.upperThreshold')"
+            ></label>
+            <input
+                id="inputUpperThreshold"
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                v-model.number="internalValue.upperThreshold"
+                :disabled="!supportsThreshold"
+                @change="saveState()"
+            />
+        </div>
+        <div class="input-wrapper">
             <label
                 for="inputCharLength"
                 v-t="'settings.charLength'"
@@ -177,6 +182,7 @@
                 max="1"
                 step="0.01"
                 v-model.number="internalValue.charLength"
+                :disabled="!supportsCharLength"
                 @change="saveState()"
             />
         </div>
@@ -214,6 +220,12 @@ const CHAR_LENGTH_SUPPORTING_INTERVALS = [
     IntervalFunction.RANDOM, IntervalFunction.WAVES
 ];
 
+const THRESHOLD_SUPPORTING_INTERVALS = [
+    IntervalFunction.EDGES, IntervalFunction.THRESHOLD, 
+];
+
+const QUARTER_ROTATION_ANGLES = [ 0, 90, 180, 270 ];
+
 type SelectOption = {
     value: string | number;
     title: string;
@@ -246,6 +258,9 @@ export default {
         },
         supportsCharLength(): boolean {
             return CHAR_LENGTH_SUPPORTING_INTERVALS.includes( this.modelValue.intervalFunction );
+        },
+        supportsThreshold(): boolean {
+            return THRESHOLD_SUPPORTING_INTERVALS.includes( this.modelValue.intervalFunction );
         },
         sortingOptions(): SelectOption[] {
             return SORTING_TYPES.map( value => ({
@@ -289,8 +304,19 @@ export default {
             "redo",
             "clearHistory",
         ]),
+        quarterTurn(): void {
+            let { angle } = this.internalValue;
+
+            angle = ( angle + 90 ) % 360;
+            // find nearest 90 angle increment
+            angle = QUARTER_ROTATION_ANGLES.reduce(( prev, curr ) => Math.abs( curr - angle ) < Math.abs( prev - angle ) ? curr : prev );
+
+            this.internalValue.angle = angle;
+
+            this.saveState();
+        },
         randomize(): void {
-            this.internalValue.angle = randomFromList([ 0, 90, 180, 270 ]);
+            this.internalValue.angle = randomFromList( QUARTER_ROTATION_ANGLES );
             this.internalValue.randomness = Math.random();
             this.internalValue.charLength = Math.random();
             this.internalValue.lowerThreshold = Math.random();
@@ -338,26 +364,7 @@ $labelWidth: 135px;
         right: 0;
 
         &__button {
-            cursor: pointer;
-            border-radius: $spacing-xsmall;
-            background-color: transparent;
-            border: 2px solid $color-2;
-            color: $color-1;
-            font-size: 1em;
-            padding: $spacing-xsmall ($spacing-medium - $spacing-small);
-            vertical-align: middle;
-            margin-left: $spacing-small;
-
-            &:hover {
-                border-color: $color-1;
-            }
-
-            &:disabled {
-                cursor: initial !important;
-                color: $color-2 !important;
-                border-color: $color-2 !important;
-                background-color: transparent !important;
-            }
+            @include smallButton();
         }
     }
 }
@@ -368,8 +375,13 @@ $labelWidth: 135px;
     padding: $spacing-small 0;
     position: relative;
 
-    &--no-label input {
-        margin-left: $labelWidth;
+    &--no-label {
+        justify-content: initial;
+        gap: $spacing-xsmall;
+        
+        input {
+            margin-left: $labelWidth;
+        }
     }
 
     label {
@@ -423,13 +435,20 @@ $labelWidth: 135px;
     width: $spacing-large;
     border-radius: $spacing-small;
     padding: $spacing-small $spacing-medium;
+    border: none;
 }
 
 .settings-button {
     @include button();
 }
 
+
+.rotate-button {
+    @include smallButton( 1.5em, 0 $spacing-small );
+}
+
 .save-button {
     @include button( false );
+    margin-left: $spacing-small;
 }
 </style>

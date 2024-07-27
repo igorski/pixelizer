@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Igor Zinken 2020-2024 - https://www.igorski.nl
+ * Igor Zinken 2024 - https://www.igorski.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,23 +20,10 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import { ACCEPTED_IMAGE_TYPES } from "@/definitions/config";
+export const EXECUTION_BUDGET = 1000 / 60; // maintain 60 fps rendering
 
-export const handleFileDrag = ( event: Event ): void => {
-    event.stopPropagation();
-    event.preventDefault();
-    // @ts-expect-error dataTransfer unknown type
-    event.dataTransfer.dropEffect = "copy";
-};
+export const MAX_IMAGE_SIZE = 1000; // lower resolutions make for crisper (and faster) pixellated results
 
-export const handleFileDrop = ( event: Event ): File | undefined => {
-    event.preventDefault();
-    event.stopPropagation();
+// all image types our file loader should accept
 
-    // @ts-expect-error Type 'FileList' is not an array type (but it destructures just fine...)
-    const items = event.dataTransfer ? [ ...event.dataTransfer.files ] : [];
-    // @ts-expect-error
-    const [ file ] = items.filter( file => ACCEPTED_IMAGE_TYPES.includes( file.type ));
-
-    return file;
-}
+export const ACCEPTED_IMAGE_TYPES = [ "image/jpeg", "image/png", "image/gif", "image/webp" ];

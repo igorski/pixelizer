@@ -40,8 +40,8 @@ export enum IntervalFunction {
 
 interface IntervalProps {
     image: PixelCanvas;
-    lowerThreshold: number;
-    upperThreshold: number;
+    lowerThreshold: number; // 8-bit value in 0 - 255 range
+    upperThreshold: number; // 8-bit value in 0 - 255 range
     charLength: number;
     intervalImage?: PixelCanvas;
 }
@@ -61,19 +61,18 @@ export const getIntervals = ( fn: IntervalFunction, props: IntervalProps ): Inte
     }
 };
 
-function edges({ image, lowerThreshold }: IntervalProps ): IntervalList {
-    const edgeData = findEdges( image );
+function edges({ image, lowerThreshold, upperThreshold }: IntervalProps ): IntervalList {
+    const edgeData = findEdges( image, upperThreshold );
     const intervals: IntervalList = [];
 
     const { width, height } = image;
-    const scaledThreshold = lowerThreshold * 255;
 
     for ( let y = 0; y < height; ++y ) {
         intervals.push( [] );
         let flag = true;
 
         for ( let x = 0; x < width; ++x ) {
-            if ( lightness( getPixel( edgeData, x, y )) > scaledThreshold ) {
+            if ( lightness( getPixel( edgeData, x, y )) > lowerThreshold ) {
                 flag = true;
             } else if ( flag ) {
                 intervals[ y ].push( x );
@@ -88,7 +87,7 @@ function random({ image, charLength }: IntervalProps ): IntervalList {
     const { width, height } = image;
     const intervals: IntervalList = [];
 
-    for ( let y = 0; y < height; ++ y ) {
+    for ( let y = 0; y < height; ++y ) {
         intervals.push( [] );
         let x = 0;
 
@@ -108,14 +107,11 @@ function threshold({ image, lowerThreshold, upperThreshold }: IntervalProps ): I
     const intervals: IntervalList = [];
     const imageData = image.context.getImageData( 0, 0, width, height );
 
-    const lt = lowerThreshold * 255;
-    const ut = upperThreshold * 255;
-
     for ( let y = 0; y < height; ++y ) {
         intervals.push( [] );
         for ( let x = 0; x < width; ++x ) {
             const level = lightness( getPixel( imageData, x, y ));
-            if ( level < lt || level > ut ) {
+            if ( level < lowerThreshold || level > upperThreshold ) {
                 intervals[ y ].push( x );
             }
         }
