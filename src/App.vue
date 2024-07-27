@@ -218,18 +218,17 @@ export default {
             this.runFilter();
         },
         async runFilter( hiRes = false ): Promise<void> {
-            let filteredImage: PixelCanvas;
             try {
-                filteredImage = await applyFilters( hiRes ? loadedImage : resizedImage, this.$data.settings );
+                sortedImage = await applyFilters( hiRes ? loadedImage : resizedImage, this.$data.settings );
             } catch {
                 return; // job was rejected (as a newer request has come in)
             }
             
-            if ( filteredImage ) {
+            if ( sortedImage ) {
                 if ( canvas?.parentNode ) {
                     this.$refs.canvasContainer.removeChild( canvas ); // remove previous image
                 }
-                ({ canvas } = filteredImage );
+                ({ canvas } = sortedImage );
                 if ( !hiRes ) {
                     this.$refs.canvasContainer.appendChild( canvas ); // @todo use zCanvas and Sprite pooling instead ?
                 }
