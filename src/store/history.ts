@@ -49,14 +49,14 @@ export const useHistoryStore = defineStore( "history", {
             }
             this.step = Math.min( MAX_STATES - 1, this.step + 1 );
         },
-        undo(): HistoryState | undefined {
+        undo(): SortSettings | undefined {
             if ( !this.canUndo ) {
                 return;
             }
             this.step = Math.max( 0, this.step - 1 );
             return { ...this.steps[ this.step ]};
         },
-        redo(): HistoryState | undefined {
+        redo(): SortSettings | undefined {
             if ( !this.canRedo ) {
                 return;
             }
