@@ -84,10 +84,8 @@
             </section>
             <section class="app__controls">
                 <Settings
-                    v-model="settings"
                     @import-mask="importMask()"
                     @clear-mask="clearMask()"
-                    @restore="restoreState( $event )"
                     @save-image="saveImage()"
                     @save-state="saveState()"
                 />
@@ -103,12 +101,11 @@ import { Loader } from "zcanvas";
 import Settings from "@/components/Settings.vue";
 import { EXECUTION_BUDGET, MAX_IMAGE_SIZE, ACCEPTED_IMAGE_TYPES } from "@/definitions/config";
 import type { PixelCanvas, SortSettings } from "@/definitions/types";
-import { IntervalFunction } from "@/filters/sorter/interval";
 import { flushCaches } from "@/filters/sorter/cache";
-import { SortingType } from "@/filters/sorter/sorting";
 import { applyFilters } from "@/services/render-service";
 import { useFileStore } from "@/store/file";
 import { useHistoryStore } from "@/store/history";
+import { useSettingsStore } from "@/store/settings";
 import { imageToCanvas, canvasToFile, resizeImage } from "@/utils/canvas";
 import { handleFileDrag, handleFileDrop, } from "@/utils/file";
 import { settingToString } from "@/utils/string";
@@ -129,17 +126,6 @@ export default {
         Settings,
     },
     data: () => ({
-        settings: {
-            width: MAX_IMAGE_SIZE,
-            height: MAX_IMAGE_SIZE,
-            angle: 0,
-            randomness: 0,
-            charLength: 0.5,
-            lowerThreshold: 0.25,
-            upperThreshold: 0.8,
-            sortingType: SortingType.LIGHTNESS,
-            intervalFunction: IntervalFunction.THRESHOLD,
-        },
         collapseMenu: true,
         acceptedFileTypes: ACCEPTED_IMAGE_TYPES.join( "," ),
     }),
@@ -149,6 +135,9 @@ export default {
             "fileName",
             "hasImage",
             "hasMask"
+        ]),
+        ...mapState( useSettingsStore, [
+            "settings",
         ]),
     },
     watch: {
@@ -187,6 +176,9 @@ export default {
         ...mapActions( useHistoryStore, [
             "clearHistory",
             "storeHistoryState", 
+        ]),
+        ...mapActions( useSettingsStore, [
+            "updateSettingDimensions",
         ]),
         openFileSelector(): void {
             // this is just some hackaroni to trigger the file selector from the
@@ -228,7 +220,7 @@ export default {
             if ( !loadedImage ) {
                 return;
             }
-            const { width, height } = this.$data.settings;
+            const { width, height } = this.settings;
 
             lastWidth  = width;
             lastHeight = height;
@@ -246,7 +238,7 @@ export default {
         },
         async runFilter( hiRes = false ): Promise<void> {
             try {
-                sortedImage = await applyFilters( hiRes ? loadedImage : resizedImage, this.$data.settings, hiRes ? loadedMask : resizedMask );
+                sortedImage = await applyFilters( hiRes ? loadedImage : resizedImage, this.settings, hiRes ? loadedMask : resizedMask );
             } catch {
                 return; // job was rejected (as a newer request has come in)
             }
@@ -263,11 +255,9 @@ export default {
         },
         handleResize(): void {
             const availableBounds = this.$refs.canvasWrapper.getBoundingClientRect();
-
             const scaledValue = Math.min( MAX_IMAGE_SIZE, Math.floor( availableBounds.height * 0.9 ));
 
-            this.$data.settings.width  = scaledValue;
-            this.$data.settings.height = scaledValue;
+            this.updateSettingDimensions( scaledValue, scaledValue );
         },
         saveImage(): void {
             // this.runFilter( true ); // only if we want to apply onto the (large) original image
@@ -276,7 +266,7 @@ export default {
             this.runFilter();
         },
         downloadImage(): void {
-            canvasToFile( canvas, `${this.fileName}_${settingToString(this.$data.settings)}_.png`, window.devicePixelRatio );
+            canvasToFile( canvas, `${this.fileName}_${settingToString(this.settings)}_.png`, window.devicePixelRatio );
         },
         importMask(): void {
             this.setImportAsMask( true );
@@ -288,11 +278,8 @@ export default {
             this.clearHistory();
             this.runFilter();
         },
-        restoreState( settings: SortSettings ): void {
-            this.$data.settings = settings;
-        },
         saveState(): void {
-            this.storeHistoryState( this.$data.settings );
+            this.storeHistoryState( this.settings );
         },
     },
 };

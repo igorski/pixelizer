@@ -24,22 +24,7 @@
     <form class="settings" @submit.stop.prevent>
         <div class="settings__header">
             <h2>Settings</h2>
-            <div class="settings__history">
-                <button
-                    :title="$t('settings.undo')"
-                    :disabled="!canUndo"
-                    class="settings__history__button"
-                    v-tooltip="$t('settings.description.undo')"
-                    @click="handleUndo()"
-                >&#8678;</button>
-                <button
-                    :title="$t('settings.redo')"
-                    :disabled="!canRedo"
-                    class="settings__history__button"
-                    v-tooltip="$t('settings.description.redo')"
-                    @click="handleRedo()"
-                >&#8680;</button>
-            </div>
+            <SettingsHistory />
         </div>
         
         <!-- <div class="input-wrapper">
@@ -226,13 +211,14 @@
 
 <script lang="ts">
 import { mapState, mapActions } from "pinia";
-import { PropType } from "vue";
 import type { SortSettings } from "@/definitions/types";
 import { SortingType } from "@/filters/sorter/sorting";
 import { IntervalFunction } from "@/filters/sorter/interval";
 import { useFileStore } from "@/store/file";
 import { useHistoryStore } from "@/store/history";
+import { useSettingsStore } from "@/store/settings";
 import { randomFromList } from "@/utils/random";
+import SettingsHistory from "./SettingsHistory.vue";
 
 const SORTING_TYPES = [ SortingType.HUE, SortingType.INTENSITY, SortingType.LIGHTNESS, SortingType.MINIMUM, SortingType.SATURATION ];
 const INTERVAL_FNS  = [ IntervalFunction.NONE, IntervalFunction.EDGES, IntervalFunction.RANDOM, IntervalFunction.THRESHOLD, IntervalFunction.WAVES ];
@@ -253,35 +239,31 @@ type SelectOption = {
 };
 
 export default {
-    props: {
-        modelValue: {
-            type: Object as PropType<SortSettings>,
-            required: true,
-        },
+    emits: [ "save-image", "save-state", "import-mask", "clear-mask" ],
+    components: {
+        SettingsHistory,
     },
-    emits: [ "update:modelValue", "restore", "save-image", "save-state", "import-mask", "clear-mask" ],
     computed: {
         ...mapState( useFileStore, [
             "hasImage",
             "hasMask",
         ]),
-        ...mapState( useHistoryStore, [
-            "canUndo",
-            "canRedo",
+        ...mapState( useSettingsStore, [
+            "settings", 
         ]),
         internalValue: {
             get(): SortSettings {
-                return this.modelValue;
+                return this.settings;
             },
             set( value: SortSettings ): void {
-                this.$emit( "update:modelValue", value );
+                this.updateSettings( value );
             },
         },
         supportsCharLength(): boolean {
-            return CHAR_LENGTH_SUPPORTING_INTERVALS.includes( this.modelValue.intervalFunction );
+            return CHAR_LENGTH_SUPPORTING_INTERVALS.includes( this.settings.intervalFunction );
         },
         supportsThreshold(): boolean {
-            return THRESHOLD_SUPPORTING_INTERVALS.includes( this.modelValue.intervalFunction );
+            return THRESHOLD_SUPPORTING_INTERVALS.includes( this.settings.intervalFunction );
         },
         sortingOptions(): SelectOption[] {
             return SORTING_TYPES.map( value => ({
@@ -303,26 +285,8 @@ export default {
             }
         },
     },
-    mounted(): void {
-        // no need to clean up as this component is active for the applications total lifecycle
-        document.addEventListener( "keydown", event => {
-            if ( event.key !== "z" ) {
-                return;
-            }
-            if (( event.ctrlKey || event.metaKey )) {
-                if ( event.shiftKey ) {
-                    this.handleRedo();
-                } else {
-                    this.handleUndo();
-                }
-            }
-            event.preventDefault();
-        });
-    },
     methods: {
         ...mapActions( useHistoryStore, [
-            "undo",
-            "redo",
             "clearHistory",
         ]),
         quarterTurn(): void {
@@ -360,16 +324,6 @@ export default {
         clearMask(): void {
             this.$emit( "clear-mask" );
         },
-        handleUndo(): void {
-            if ( this.canUndo ) {
-                this.$emit( "restore", this.undo());
-            }
-        },
-        handleRedo(): void {
-            if ( this.canRedo ) {
-                this.$emit( "restore", this.redo());
-            }
-        },
     },
 }
 </script>
@@ -385,16 +339,6 @@ $labelWidth: 135px;
     
     &__header {
         position: relative;
-    }
-
-    &__history {
-        position: absolute;
-        top: 0;
-        right: 0;
-
-        &__button {
-            @include smallButton();
-        }
     }
 }
 
