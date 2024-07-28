@@ -44,20 +44,20 @@
         </div>
     </section>
     <div
-        class="app__settings"
+        class="app__sidebar"
         :class="{
-            'app__settings--collapsed': collapseMenu
+            'app__sidebar--collapsed': collapseMenu
         }"
     >
-        <section class="app__settings__header">
+        <section class="app__sidebar__header">
             <h1 v-t="'header.title'" class="app__title"></h1>
             <button
-                class="app__settings__collapse-btn"
+                class="app__sidebar__collapse-btn"
                 @click="collapseMenu = !collapseMenu"
             >&#9776;</button>
         </section>
-        <section class="app__settings__body">
-            <section class="app__settings__file-manager">
+        <section class="app__sidebar__body">
+            <section class="app__sidebar__file-manager">
                 <p class="app__description">
                     {{ $t('header.description', { title: $t( "header.title" )}) }} <a href="https://github.com/igorski/pixelizer" target="_blank">GitHub</a>
                 </p>
@@ -82,7 +82,7 @@
                     @change="handleImageSelect( $event )"
                 />
             </section>
-            <section class="app__controls">
+            <section class="app__settings">
                 <Settings
                     @import-mask="importMask()"
                     @clear-mask="clearMask()"
@@ -341,11 +341,13 @@ $sideBarWidth: 370px;
         &--expanded {
             @include mobile() {
                 width: 100%;
+                align-items: unset;
+                padding-top: $spacing-medium;
             }
         }
     }
 
-    &__settings {
+    &__sidebar {
         position: fixed;
         display: flex;
         flex-direction: column;
@@ -379,35 +381,9 @@ $sideBarWidth: 370px;
         &__file-manager button {
             margin-right: $spacing-small;
         }
-
-        @include large() {
-            width: $sideBarWidth;
-            border-left: 4px solid $color-4;
-        
-            &__collapse-btn {
-                display: none;
-            }
-
-            &__body {
-                overflow-y: auto;
-            }
-        }
-
-        @include mobile() {
-            border-top: 4px solid $color-4;
-            background-color: rgba(0,0,0,.75);
-            
-            &__body {
-                overflow-y: auto;
-            }
-
-            &--collapsed {
-                top: calc(100% - 72px);
-            }   
-        }
     }
 
-    &__controls {
+    &__settings {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -441,6 +417,50 @@ $sideBarWidth: 370px;
     &__privacy-explanation {
         margin-top: $spacing-medium;
         font-size: 0.85em;
+    }
+
+    @include large() {
+        &__sidebar {
+            width: $sideBarWidth;
+            border-left: 4px solid $color-4;
+        
+            &__collapse-btn {
+                display: none;
+            }
+
+            &__body {
+                overflow-y: auto;
+            }
+        }
+    }
+
+    @include mobile() {
+        &__sidebar {
+            border-top: 4px solid $color-4;
+            background-color: rgba(0,0,0,.75);
+            top: 50%;
+            height: 50%;
+            
+            &__body {
+                overflow-y: auto;
+            }
+
+            &--collapsed {
+                top: calc(100% - 72px);
+
+                .app__sidebar__body {
+                    display: none;
+                }
+            }
+        }
+
+        &__title {
+            margin-bottom: $spacing-small;
+        }
+
+        &__description {
+            display: none;
+        }
     }
 }
 

@@ -21,177 +21,178 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
  <template>
-    <form class="settings" @submit.stop.prevent>
+    <section class="settings">
         <div class="settings__header">
             <h2>Settings</h2>
             <SettingsHistory />
         </div>
-        
-        <!-- <div class="input-wrapper">
-            <label for="inputWidth">Width</label>
-            <input
-                id="inputWidth"
-                v-model="internalValue.width"
-            />
-            <label for="inputHeight">Height</label>
-            <input
-                id="inputHeight"
-                v-model="internalValue.height"
-            />
-        </div> -->
-        
-        <div class="input-wrapper">
-            <label
-                for="inputAngle"
-                v-t="'settings.angle'"
-                v-tooltip.left="$t('settings.description.angle')"
-            ></label>
-            <input
-                type="range"
-                min="0"
-                max="359"
-                step="1"
-                v-model.number="internalValue.angle"
-                @change="saveState()"
-            />
-        </div>
-        <div class="input-wrapper input-wrapper--no-label">
-            <input
-                id="inputAngle"
-                type="number"
-                v-model.number="internalValue.angle"
-                @change="saveState()"
-            />
-            <button
-                :title="$t('settings.description.quarterTurn')"
-                class="rotate-button"
-                v-tooltip="$t('settings.description.quarterTurn')"
-                @click="quarterTurn()"
-            >&#10561;</button>
-        </div>
-        <div class="input-wrapper">
-            <label
-                for="inputRandom"
-                v-t="'settings.randomness'"
-                v-tooltip.left="$t('settings.description.randomness')"
-            ></label>
-            <input
-                id="inputRandom"
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                v-model.number="internalValue.randomness"
-                @change="saveState()"
-            />
-        </div>
-        <div class="input-wrapper input-wrapper--select">
-            <label
-                for="inputSortingType"
-                v-t="'settings.sortingType'"
-                v-tooltip.left="$t('settings.description.sortingType')"
-            ></label>
-            <select
-                id="inputSortingType"
-                v-model="internalValue.sortingType"
-                @change="saveState()"
-            >
-                <option
-                    v-for="option in sortingOptions"
-                    :key="option.value"
-                    :value="option.value"
-                >{{ option.title }}</option>
-            </select>
-        </div>
-        <div class="input-wrapper input-wrapper--select">
-            <label
-                for="inputIntervalFunction"
-                v-t="'settings.intervalFunction'"
-                v-tooltip.left="$t('settings.description.intervalFunction')"
-            ></label>
-            <select
-                id="inputIntervalFunction"
-                v-model="internalValue.intervalFunction"
-                @change="saveState()"
-            >
-                <option
-                    v-for="option in intervalOptions"
-                    :key="option.value"
-                    :value="option.value"
-                >{{ option.title }}</option>
-            </select>
-        </div>
-        <div class="input-wrapper">
-            <label
-                for="inputLowerThreshold"
-                v-t="'settings.lowerThreshold'"
-                v-tooltip.left="$t('settings.description.lowerThreshold')"
-            ></label>
-            <input
-                id="inputLowerThreshold"
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                v-model.number="internalValue.lowerThreshold"
-                :disabled="!supportsThreshold"
-                @change="saveState()"
-            />
-        </div>
-        <div class="input-wrapper">
-            <label
-                for="inputUpperThreshold"
-                v-t="'settings.upperThreshold'"
-                v-tooltip.left="$t('settings.description.upperThreshold')"
-            ></label>
-            <input
-                id="inputUpperThreshold"
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                v-model.number="internalValue.upperThreshold"
-                :disabled="!supportsThreshold"
-                @change="saveState()"
-            />
-        </div>
-        <div class="input-wrapper">
-            <label
-                for="inputCharLength"
-                v-t="'settings.charLength'"
-                v-tooltip.left="$t('settings.description.charLength')"
-            ></label>
-            <input
-                id="inputCharLength"
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                v-model.number="internalValue.charLength"
-                :disabled="!supportsCharLength"
-                @change="saveState()"
-            />
-        </div>
-        <div class="input-wrapper mask-import">
-            <label
-                v-t="'settings.mask'"
-                v-tooltip.left="$t('settings.description.useMask')"
-            ></label>
-            <div class="button-group">
-                <button
-                    v-t="'settings.description.import'"
-                    class="settings-button"
-                    @click="importMask()"
-                ></button>
-                <button
-                    v-t="'settings.description.clear'"
-                    class="settings-button settings-button--secondary"
-                    :disabled="!hasMask"
-                    @click="clearMask()"
-                ></button>
+        <form class="settings__form" @submit.stop.prevent>
+            <!-- <div class="input-wrapper">
+                <label for="inputWidth">Width</label>
+                <input
+                    id="inputWidth"
+                    v-model="internalValue.width"
+                />
+                <label for="inputHeight">Height</label>
+                <input
+                    id="inputHeight"
+                    v-model="internalValue.height"
+                />
+            </div> -->
+            
+            <div class="input-wrapper">
+                <label
+                    for="inputAngle"
+                    v-t="'settings.angle'"
+                    v-tooltip.left="$t('settings.description.angle')"
+                ></label>
+                <input
+                    type="range"
+                    min="0"
+                    max="359"
+                    step="1"
+                    v-model.number="internalValue.angle"
+                    @change="saveState()"
+                />
             </div>
-        </div>
-    </form>
+            <div class="input-wrapper input-wrapper--no-label">
+                <input
+                    id="inputAngle"
+                    type="number"
+                    v-model.number="internalValue.angle"
+                    @change="saveState()"
+                />
+                <button
+                    :title="$t('settings.description.quarterTurn')"
+                    class="rotate-button"
+                    v-tooltip="$t('settings.description.quarterTurn')"
+                    @click="quarterTurn()"
+                >&#10561;</button>
+            </div>
+            <div class="input-wrapper">
+                <label
+                    for="inputRandom"
+                    v-t="'settings.randomness'"
+                    v-tooltip.left="$t('settings.description.randomness')"
+                ></label>
+                <input
+                    id="inputRandom"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    v-model.number="internalValue.randomness"
+                    @change="saveState()"
+                />
+            </div>
+            <div class="input-wrapper input-wrapper--select">
+                <label
+                    for="inputSortingType"
+                    v-t="'settings.sortingType'"
+                    v-tooltip.left="$t('settings.description.sortingType')"
+                ></label>
+                <select
+                    id="inputSortingType"
+                    v-model="internalValue.sortingType"
+                    @change="saveState()"
+                >
+                    <option
+                        v-for="option in sortingOptions"
+                        :key="option.value"
+                        :value="option.value"
+                    >{{ option.title }}</option>
+                </select>
+            </div>
+            <div class="input-wrapper input-wrapper--select">
+                <label
+                    for="inputIntervalFunction"
+                    v-t="'settings.intervalFunction'"
+                    v-tooltip.left="$t('settings.description.intervalFunction')"
+                ></label>
+                <select
+                    id="inputIntervalFunction"
+                    v-model="internalValue.intervalFunction"
+                    @change="saveState()"
+                >
+                    <option
+                        v-for="option in intervalOptions"
+                        :key="option.value"
+                        :value="option.value"
+                    >{{ option.title }}</option>
+                </select>
+            </div>
+            <div class="input-wrapper">
+                <label
+                    for="inputLowerThreshold"
+                    v-t="'settings.lowerThreshold'"
+                    v-tooltip.left="$t('settings.description.lowerThreshold')"
+                ></label>
+                <input
+                    id="inputLowerThreshold"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    v-model.number="internalValue.lowerThreshold"
+                    :disabled="!supportsThreshold"
+                    @change="saveState()"
+                />
+            </div>
+            <div class="input-wrapper">
+                <label
+                    for="inputUpperThreshold"
+                    v-t="'settings.upperThreshold'"
+                    v-tooltip.left="$t('settings.description.upperThreshold')"
+                ></label>
+                <input
+                    id="inputUpperThreshold"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    v-model.number="internalValue.upperThreshold"
+                    :disabled="!supportsThreshold"
+                    @change="saveState()"
+                />
+            </div>
+            <div class="input-wrapper">
+                <label
+                    for="inputCharLength"
+                    v-t="'settings.charLength'"
+                    v-tooltip.left="$t('settings.description.charLength')"
+                ></label>
+                <input
+                    id="inputCharLength"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    v-model.number="internalValue.charLength"
+                    :disabled="!supportsCharLength"
+                    @change="saveState()"
+                />
+            </div>
+            <div class="input-wrapper mask-import">
+                <label
+                    v-t="'settings.mask'"
+                    v-tooltip.left="$t('settings.description.useMask')"
+                ></label>
+                <div class="button-group">
+                    <button
+                        v-t="'settings.description.import'"
+                        class="settings-button"
+                        @click="importMask()"
+                    ></button>
+                    <button
+                        v-t="'settings.description.clear'"
+                        class="settings-button settings-button--secondary"
+                        :disabled="!hasMask"
+                        @click="clearMask()"
+                    ></button>
+                </div>
+            </div>
+        </form>
+    </section>
     <section class="footer">
         <button
             @click="randomize()"
