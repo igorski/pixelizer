@@ -26,13 +26,13 @@ import type { Size } from "zcanvas";
 import type { PixelList } from "@/definitions/types";
 import type { IntervalList } from "@/filters/sorter/interval";
 import type { SortingFunction } from "@/filters/sorter/sorting";
-import { getPixel } from "@/utils/canvas";
+import { getPixel, hasPixel } from "@/utils/canvas";
 
 export interface SortProps {
     size: Size;
     intervals: IntervalList;
     imageData: ImageData;
-    maskData?: ImageData;
+    maskData: ImageData;
     randomness: number;
     sortingFunction: SortingFunction;
 };
@@ -53,7 +53,7 @@ export const sortImage = ({ size, imageData, maskData, intervals, randomness, so
 
             if ( maskData ) {
                 for ( let x = minX; x < maxX; ++x ) {
-                    if ( getPixel( maskData, x, y )) {
+                    if ( hasPixel( maskData, x, y )) {
                         interval.push( getPixel( imageData, x, y )! );
                     }
                 }

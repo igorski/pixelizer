@@ -166,6 +166,16 @@ export const setPixel = ( imageData: ImageData, x: number, y: number, pixel: Pix
     return true;
 };
 
+export const hasPixel = ( imageData: ImageData, x: number, y: number ): boolean => {
+    const pixel = getPixel( imageData, x, y );
+    if ( !pixel ) {
+        return false;
+    }
+    const [ r, g, b, a ] = pixel;
+
+    return ( a === 0 || ( r === 0 && g === 0 && b === 0 ));
+};
+
 function removeAntiAlias( canvas: HTMLCanvasElement, context: CanvasRenderingContext2D ): void {
     [ "-moz-crisp-edges", "-webkit-crisp-edges", "pixelated", "crisp-edges" ]
         .forEach( style => {

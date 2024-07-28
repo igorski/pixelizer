@@ -16,11 +16,6 @@ Bug reports, feature requests, questions and discussions are welcome on the GitH
 
 Please vote on feature requests by using the Thumbs Up/Down reaction on the first post.
 
-## TODO
-
- * Add loading of mask support
- * Filters do not work full width of on landscape images when angle is at exactly 90 degrees
-
 ## Project setup
 
 ```

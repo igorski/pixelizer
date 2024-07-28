@@ -43,7 +43,6 @@ interface IntervalProps {
     lowerThreshold: number; // 8-bit value in 0 - 255 range
     upperThreshold: number; // 8-bit value in 0 - 255 range
     charLength: number;
-    intervalImage?: PixelCanvas;
 }
 
 export const getIntervals = ( fn: IntervalFunction, props: IntervalProps ): IntervalList => {

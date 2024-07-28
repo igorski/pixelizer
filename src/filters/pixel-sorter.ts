@@ -29,13 +29,12 @@ import { getCachedRotation, setCachedRotation, getCachedMask, setCachedMask } fr
 import { getIntervals, IntervalFunction } from "@/filters/sorter/interval";
 import { sortImage } from "@/filters/sorter/sorter";
 import { getSortingFunctionByType, SortingType } from "@/filters/sorter/sorting";
-import { createCanvas, cloneCanvas, cropCanvas, rotateCanvas, getPixel, setPixel } from "@/utils/canvas";
+import { createCanvas, cloneCanvas, cropCanvas, rotateCanvas, getPixel, setPixel, hasPixel } from "@/utils/canvas";
 import { prepare, waitWhenBusy } from "@/utils/rafDebounce";
 
 interface PixelSortParams {
     image: PixelCanvas;
     maskImage?: PixelCanvas;
-    intervalImage?: PixelCanvas;
     randomness?: number; // normalized 0 - 1 range
     charLength?: number; // normalized 0 - 1 range
     lowerThreshold?: number; // normalized 0 - 1 range
@@ -57,7 +56,7 @@ interface PixelSortParams {
  * available inside Workers. Arguably relying solely on ImageData would work, but complicates the current
  * use of cached rotations and masks.
  */
-export const pixelsort = async ({ image, maskImage, intervalImage, randomness = 0, charLength = 0.5,
+export const pixelsort = async ({ image, maskImage, randomness = 0, charLength = 0.5,
     sortingType = SortingType.LIGHTNESS, intervalFunction = IntervalFunction.THRESHOLD,
     lowerThreshold = 0.25, upperThreshold = 0.8, angle = 0 }: PixelSortParams ): Promise<PixelCanvas> => {
 
@@ -83,17 +82,17 @@ export const pixelsort = async ({ image, maskImage, intervalImage, randomness = 
     const { width, height } = image;
     const size = { width, height };
 
-    const imageData = image.context.getImageData( 0, 0, width, height );
-    
-    const cachedMask = getCachedMask( image.width, image.height, angle );
+    const imageData  = image.context.getImageData( 0, 0, width, height );
+
+    const maskSourceId = maskImage?.id ?? image.id;
+    const cachedMask   = getCachedMask( maskSourceId );
 
     if ( cachedMask ) {
         maskImage = cachedMask;
     } else {
-        maskImage = maskImage ?? createCanvas( image.width, image.height );
-        maskImage = rotateCanvas( applyThreshold( maskImage ), angle );
+        maskImage = applyThreshold( maskImage ?? createCanvas( width, height ));
 
-        setCachedMask( image.width, image.height, angle, maskImage );
+        setCachedMask( maskSourceId, maskImage );
     }
     const maskData = maskImage.context.getImageData( 0, 0, maskImage.width, maskImage.height );
 
@@ -109,7 +108,6 @@ export const pixelsort = async ({ image, maskImage, intervalImage, randomness = 
         lowerThreshold,
         upperThreshold,
         charLength,
-        intervalImage,
     });
 
     await waitWhenBusy(); // wait in case previous executions have exceeded the time budget
@@ -138,7 +136,7 @@ export const pixelsort = async ({ image, maskImage, intervalImage, randomness = 
     return output;
 }
 
-function placePixels( pixels: PixelList[], original: ImageData, size: Size, mask?: ImageData ): PixelCanvas {
+function placePixels( pixels: PixelList[], original: ImageData, size: Size, mask: ImageData ): PixelCanvas {
     const { width, height } = size;
 
     const output = createCanvas( width, height, true );
@@ -147,7 +145,7 @@ function placePixels( pixels: PixelList[], original: ImageData, size: Size, mask
     for ( let y = 0; y < height; ++y ) {
         let count = 0;
         for ( let x = 0; x < width; ++x ) {
-            if ( mask && getPixel( mask, x, y )) {
+            if ( hasPixel( mask, x, y )) {
                 const pixel = pixels[ y ][ count ];
                 pixel && setPixel( outputdata, x, y, pixel );
                 ++count;

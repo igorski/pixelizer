@@ -84,8 +84,9 @@
             </section>
             <section class="app__controls">
                 <Settings
-                    :has-image="hasImage"
                     v-model="settings"
+                    @import-mask="importMask()"
+                    @clear-mask="clearMask()"
                     @restore="restoreState( $event )"
                     @save-image="saveImage()"
                     @save-state="saveState()"
@@ -97,7 +98,7 @@
 
 <script lang="ts">
 import debounce from "lodash.debounce";
-import { mapActions } from "pinia";
+import { mapState, mapActions } from "pinia";
 import { Loader } from "zcanvas";
 import Settings from "@/components/Settings.vue";
 import { EXECUTION_BUDGET, MAX_IMAGE_SIZE, ACCEPTED_IMAGE_TYPES } from "@/definitions/config";
@@ -106,18 +107,20 @@ import { IntervalFunction } from "@/filters/sorter/interval";
 import { flushCaches } from "@/filters/sorter/cache";
 import { SortingType } from "@/filters/sorter/sorting";
 import { applyFilters } from "@/services/render-service";
+import { useFileStore } from "@/store/file";
 import { useHistoryStore } from "@/store/history";
 import { imageToCanvas, canvasToFile, resizeImage } from "@/utils/canvas";
 import { handleFileDrag, handleFileDrop, } from "@/utils/file";
 import { settingToString } from "@/utils/string";
 import { constrainAspectRatio } from "@/utils/math";
-import "floating-vue/dist/style.css";
 
+// we store these locally instead of the Pinia store as they needn't be reactive
 let loadedImage: PixelCanvas | undefined;
 let resizedImage: PixelCanvas | undefined;
+let loadedMask: PixelCanvas | undefined;
+let resizedMask: PixelCanvas | undefined;
 let sortedImage: PixelCanvas | undefined;
 let canvas: HTMLCanvasElement | undefined;
-let fileName: string | undefined;
 let lastWidth = 0;
 let lastHeight = 0;
 
@@ -127,8 +130,8 @@ export default {
     },
     data: () => ({
         settings: {
-            width: 400,
-            height: 400,
+            width: MAX_IMAGE_SIZE,
+            height: MAX_IMAGE_SIZE,
             angle: 0,
             randomness: 0,
             charLength: 0.5,
@@ -137,10 +140,17 @@ export default {
             sortingType: SortingType.LIGHTNESS,
             intervalFunction: IntervalFunction.THRESHOLD,
         },
-        hasImage: false,
         collapseMenu: true,
         acceptedFileTypes: ACCEPTED_IMAGE_TYPES.join( "," ),
     }),
+    computed: {
+        ...mapState( useFileStore, [
+            "importAsMask",
+            "fileName",
+            "hasImage",
+            "hasMask"
+        ]),
+    },
     watch: {
         settings: {
             deep: true,
@@ -167,6 +177,13 @@ export default {
         this.debouncedResize = debounce( this.resizeSource.bind( this ), EXECUTION_BUDGET );
     },
     methods: {
+        ...mapActions( useFileStore, [
+            "setFileName",
+            "setHasImage",
+            "setHasMask",
+            "setImportAsMask",
+            "onMaskLoaded",
+        ]),
         ...mapActions( useHistoryStore, [
             "clearHistory",
             "storeHistoryState", 
@@ -195,10 +212,15 @@ export default {
             this.clearHistory();
 
             const source = await Loader.loadImage( file );
-            loadedImage = imageToCanvas( source );
 
-            [ fileName ] = file.name.split( "." );
-            this.hasImage = true;
+            if ( this.importAsMask ) {
+                loadedMask = imageToCanvas( source );
+                this.onMaskLoaded();
+            } else {
+                loadedImage = imageToCanvas( source );
+            }
+            this.setFileName( file.name.split( "." )[ 0 ]);
+            this.setHasImage( !!loadedImage );
             this.saveState();
             this.resizeSource();
         },
@@ -212,14 +234,19 @@ export default {
             lastHeight = height;
             
             // resize image (maintaining its aspect ratio) to desired width and height
-            const size = constrainAspectRatio( width, height, loadedImage.width, loadedImage.height );
+            let size = constrainAspectRatio( width, height, loadedImage.width, loadedImage.height );
             resizedImage = resizeImage( loadedImage.canvas, size.width, size.height );
 
+            // resize mask
+            if ( loadedMask ) {
+                size = constrainAspectRatio( size.width, size.height, loadedMask.width, loadedMask.height );
+                resizedMask = resizeImage( loadedMask.canvas, size.width, size.height );
+            }
             this.runFilter();
         },
         async runFilter( hiRes = false ): Promise<void> {
             try {
-                sortedImage = await applyFilters( hiRes ? loadedImage : resizedImage, this.$data.settings );
+                sortedImage = await applyFilters( hiRes ? loadedImage : resizedImage, this.$data.settings, hiRes ? loadedMask : resizedMask );
             } catch {
                 return; // job was rejected (as a newer request has come in)
             }
@@ -249,7 +276,17 @@ export default {
             this.runFilter();
         },
         downloadImage(): void {
-            canvasToFile( canvas, `${fileName}_${settingToString(this.$data.settings)}_.png`, window.devicePixelRatio );
+            canvasToFile( canvas, `${this.fileName}_${settingToString(this.$data.settings)}_.png`, window.devicePixelRatio );
+        },
+        importMask(): void {
+            this.setImportAsMask( true );
+            this.openFileSelector();
+        },
+        clearMask(): void {
+            loadedMask = resizedMask = undefined;
+            this.setHasMask( false );
+            this.clearHistory();
+            this.runFilter();
         },
         restoreState( settings: SortSettings ): void {
             this.$data.settings = settings;
@@ -265,6 +302,7 @@ export default {
 // set global styles (typography, page layout, etc.)
 // beyond this point all styling should be scoped
 @import "@/styles/_global";
+@import "floating-vue/dist/style.css";
 
 #app {
     -webkit-font-smoothing: antialiased;

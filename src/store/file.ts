@@ -20,37 +20,38 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import type { PixelCanvas } from "@/definitions/types";
+import { defineStore } from "pinia";
 
-type Cache = {
-    rotation: Record<string, PixelCanvas>;
-    mask: Record<string, PixelCanvas>;
+type FileState = {
+    hasImage: boolean;
+    hasMask: boolean;
+    importAsMask: boolean;
+    fileName: string | undefined;
 };
 
-const canvasCache: Cache = {
-    rotation: {},
-    mask: {},
-};
-
-export const getCachedRotation = ( id: string, angle: number ): PixelCanvas | undefined => {
-    const key = `${id}_${angle}`;
-    return canvasCache.rotation[ key ];
-};
-
-export const setCachedRotation = ( id: string, angle: number, canvas: PixelCanvas ): void => {
-    const key = `${id}_${angle}`;
-    canvasCache.rotation[ key ] = canvas;
-};
-
-export const getCachedMask = ( id: string ): PixelCanvas | undefined => {
-    return canvasCache.mask[ id ];
-};
-
-export const setCachedMask = ( id: string, canvas: PixelCanvas ): void => {
-    canvasCache.mask[ id ] = canvas;
-};
-
-export const flushCaches = (): void => {
-    canvasCache.rotation = {};
-    canvasCache.mask = {};
-};
+export const useFileStore = defineStore( "files", {
+    state: (): FileState => ({
+        hasImage: false,
+        hasMask: false,
+        importAsMask: false,
+        fileName: undefined,
+    }),
+    actions: {
+        setFileName( value: string ): void {
+            this.fileName = value;
+        },
+        setHasImage( value: boolean ): void {
+            this.hasImage = value;
+        },
+        setHasMask( value: boolean ): void {
+            this.hasMask = value;
+        },
+        setImportAsMask( value: boolean ): void {
+            this.importAsMask = value;
+        },
+        onMaskLoaded(): void {
+            this.setHasMask( true );
+            this.setImportAsMask( false );
+        },
+    },
+});

@@ -20,6 +20,7 @@
             "charLength": "Char length",
             "randomize": "Randomize",
             "useAsBase": "Use as base",
+            "mask": "Mask",
             "description": {
                 "angle": "Angle (in degrees) determining the sorting direction",
                 "quarterTurn": "Rotate in 90 degree increments",
@@ -29,6 +30,9 @@
                 "intervalFunction": "The algorithm used to calculate the intervals between pixels",
                 "lowerThreshold": "How dark a pixel must be to be considered a border for sorting",
                 "upperThreshold": "How bright a pixel must be to be considered as a border for sorting",
+                "useMask": "Load an additional image to use as a mask for the sorted pixels",
+                "import": "Import",
+                "clear": "Clear",
                 "randomize": "Get some inspiration",
                 "useAsBase": "Allows you to stack filtered output (this clears state history)",
                 "undo": "Restore previous state",

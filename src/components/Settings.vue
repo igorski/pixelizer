@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
  <template>
-    <section class="settings">
+    <form class="settings" @submit.stop.prevent>
         <div class="settings__header">
             <h2>Settings</h2>
             <div class="settings__history">
@@ -73,6 +73,7 @@
         <div class="input-wrapper input-wrapper--no-label">
             <input
                 id="inputAngle"
+                type="number"
                 v-model.number="internalValue.angle"
                 @change="saveState()"
             />
@@ -186,7 +187,26 @@
                 @change="saveState()"
             />
         </div>
-    </section>
+        <div class="input-wrapper mask-import">
+            <label
+                v-t="'settings.mask'"
+                v-tooltip.left="$t('settings.description.useMask')"
+            ></label>
+            <div class="button-group">
+                <button
+                    v-t="'settings.description.import'"
+                    class="settings-button"
+                    @click="importMask()"
+                ></button>
+                <button
+                    v-t="'settings.description.clear'"
+                    class="settings-button settings-button--secondary"
+                    :disabled="!hasMask"
+                    @click="clearMask()"
+                ></button>
+            </div>
+        </div>
+    </form>
     <section class="footer">
         <button
             @click="randomize()"
@@ -210,6 +230,7 @@ import { PropType } from "vue";
 import type { SortSettings } from "@/definitions/types";
 import { SortingType } from "@/filters/sorter/sorting";
 import { IntervalFunction } from "@/filters/sorter/interval";
+import { useFileStore } from "@/store/file";
 import { useHistoryStore } from "@/store/history";
 import { randomFromList } from "@/utils/random";
 
@@ -237,13 +258,13 @@ export default {
             type: Object as PropType<SortSettings>,
             required: true,
         },
-        hasImage: {
-            type: Boolean,
-            default: false,
-        },
     },
-    emits: [ "update:modelValue", "restore", "save-image", "save-state" ],
+    emits: [ "update:modelValue", "restore", "save-image", "save-state", "import-mask", "clear-mask" ],
     computed: {
+        ...mapState( useFileStore, [
+            "hasImage",
+            "hasMask",
+        ]),
         ...mapState( useHistoryStore, [
             "canUndo",
             "canRedo",
@@ -332,6 +353,12 @@ export default {
         },
         saveState(): void {
             this.$emit( "save-state" );
+        },
+        importMask(): void {
+            this.$emit( "import-mask" );
+        },
+        clearMask(): void {
+            this.$emit( "clear-mask" );
         },
         handleUndo(): void {
             if ( this.canUndo ) {
@@ -432,9 +459,15 @@ $labelWidth: 135px;
     }
 }
 
+.button-group {
+    display: flex;
+    gap: $spacing-small;
+    flex: 1;
+}
+
 #inputAngle {
     flex: 0;
-    width: $spacing-large;
+    width: $spacing-large + $spacing-medium;
     border-radius: $spacing-small;
     padding: $spacing-small $spacing-medium;
     border: none;
@@ -442,6 +475,10 @@ $labelWidth: 135px;
 
 .settings-button {
     @include button();
+
+    &--secondary {
+        @include button( false );
+    }
 }
 
 

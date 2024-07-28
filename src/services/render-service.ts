@@ -39,11 +39,11 @@ let nextRender: DelayedRender | undefined;
  * to be executed once the previous request has finished. In the case multiple render requests come in
  * the older ones will be rejected (as their state is no longer relevant with a newer request having come in).
  */
-export const applyFilters = async ( image: PixelCanvas, sortSettings: SortSettings ): RenderResult => {
+export const applyFilters = async ( image: PixelCanvas, sortSettings: SortSettings, maskImage?: PixelCanvas ): RenderResult => {
     const { width, height, ...settings } = sortSettings;
 
     if ( renderPending ) {
-        return enqueueRender( image, sortSettings );
+        return enqueueRender( image, sortSettings, maskImage );
     }
 
     renderPending = true;
@@ -51,6 +51,7 @@ export const applyFilters = async ( image: PixelCanvas, sortSettings: SortSettin
     try { 
         const sortedImage = await pixelsort({
             image,
+            maskImage,
             ...settings,
         });
         return sortedImage;
@@ -68,7 +69,7 @@ export const applyFilters = async ( image: PixelCanvas, sortSettings: SortSettin
 
 /* internal methods */
 
-function enqueueRender( image: PixelCanvas, sortSettings: SortSettings ): RenderResult {
+function enqueueRender( image: PixelCanvas, sortSettings: SortSettings, maskImage: PixelCanvas ): RenderResult {
     if ( nextRender ) {
         nextRender.reject(); // discard previously enqueued render
     }
@@ -86,7 +87,7 @@ function enqueueRender( image: PixelCanvas, sortSettings: SortSettings ): Render
         execute : async (): Promise<void> => {
             nextRender = undefined;
             try {
-                localResolve( await applyFilters( image, sortSettings ));
+                localResolve( await applyFilters( image, sortSettings, maskImage ));
             } catch {
                 localReject();
             }
