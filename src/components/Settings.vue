@@ -313,8 +313,8 @@ export default {
             this.saveState();
         },
         saveImage(): void {
-            this.$emit( "save-image" );
             this.clearHistory();
+            this.$emit( "save-image" );
         },
         saveState(): void {
             this.$emit( "save-state" );

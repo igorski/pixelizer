@@ -262,6 +262,7 @@ export default {
         saveImage(): void {
             // this.runFilter( true ); // only if we want to apply onto the (large) original image
             loadedImage = sortedImage;
+            this.saveState();
             this.resizeSource();
             this.runFilter();
         },
