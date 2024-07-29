@@ -176,6 +176,16 @@ export const hasPixel = ( imageData: ImageData, x: number, y: number ): boolean 
     return ( a === 0 || ( r === 0 && g === 0 && b === 0 ));
 };
 
+export const createCanvasFromPattern = ( source: PixelCanvas, destinationWidth: number, destinationHeight: number ): PixelCanvas => {
+    const output = createCanvas( destinationWidth, destinationHeight );
+
+    const pattern = output.context.createPattern( source.canvas, "repeat" );
+    output.context.fillStyle = pattern;
+    output.context.fillRect( 0, 0, destinationWidth, destinationHeight );
+
+    return output;
+};
+
 function removeAntiAlias( canvas: HTMLCanvasElement, context: CanvasRenderingContext2D ): void {
     [ "-moz-crisp-edges", "-webkit-crisp-edges", "pixelated", "crisp-edges" ]
         .forEach( style => {

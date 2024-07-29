@@ -106,7 +106,7 @@ import { applyFilters } from "@/services/render-service";
 import { useFileStore } from "@/store/file";
 import { useHistoryStore } from "@/store/history";
 import { useSettingsStore } from "@/store/settings";
-import { imageToCanvas, canvasToFile, resizeImage } from "@/utils/canvas";
+import { imageToCanvas, canvasToFile, resizeImage, createCanvasFromPattern } from "@/utils/canvas";
 import { handleFileDrag, handleFileDrop, } from "@/utils/file";
 import { settingToString } from "@/utils/string";
 import { constrainAspectRatio } from "@/utils/math";
@@ -226,13 +226,17 @@ export default {
             lastHeight = height;
             
             // resize image (maintaining its aspect ratio) to desired width and height
-            let size = constrainAspectRatio( width, height, loadedImage.width, loadedImage.height );
+            const size = constrainAspectRatio( width, height, loadedImage.width, loadedImage.height );
             resizedImage = resizeImage( loadedImage.canvas, size.width, size.height );
 
-            // resize mask
             if ( loadedMask ) {
-                size = constrainAspectRatio( size.width, size.height, loadedMask.width, loadedMask.height );
-                resizedMask = resizeImage( loadedMask.canvas, size.width, size.height );
+                // resize mask (when of equal size to image)
+                if ( loadedMask.width === loadedImage.width && loadedMask.height === loadedImage.height ) {
+                    resizedMask = resizeImage( loadedMask.canvas, size.width, size.height );
+                } else {
+                    // create pattern from mask (when of different size)
+                    resizedMask = createCanvasFromPattern( loadedMask, size.width, size.height );
+                }
             }
             this.runFilter();
         },
