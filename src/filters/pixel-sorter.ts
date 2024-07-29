@@ -99,7 +99,7 @@ export const pixelsort = async ({ image, maskImage, randomness = 0, charLength =
     await waitWhenBusy(); // wait in case previous executions have exceeded the time budget
     
     // scale values
-    charLength = Math.round( charLength * 400 );//size.width; // for maximum width of source image
+    charLength = Math.round( charLength * 400 /* or size.width */ );
     lowerThreshold *= 255;
     upperThreshold *= 255;
     

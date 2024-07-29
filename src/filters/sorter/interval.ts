@@ -91,7 +91,7 @@ function random({ image, charLength }: IntervalProps ): IntervalList {
         let x = 0;
 
         while ( true ) {
-            x += Math.round( charLength * Math.random() );
+            x += Math.max( 1, Math.round( charLength * Math.random() ));
             if ( x > width ) {
                 break;
             }
