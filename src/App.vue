@@ -313,6 +313,7 @@ export default {
 @import "@/styles/_mixins";
 
 $sideBarWidth: 370px;
+$bgTileSize: 40px;
 
 .app {
     &__canvas-wrapper {
@@ -321,6 +322,10 @@ $sideBarWidth: 370px;
         justify-content: space-between;
         width: 100%;
         min-height: 100%;
+        background-image:
+            linear-gradient( to bottom, transparent 99%, #000 100% ),
+            linear-gradient( to right, #444 99%, #000 100% );
+        background-size: $bgTileSize $bgTileSize;
     }
 
     &__title {
@@ -412,6 +417,7 @@ $sideBarWidth: 370px;
         border: 3px solid #b6b6b6;
         font-size: 1.25em;
         user-select: none;
+        background-color: #444;
 
         &:hover {
             border-color: $color-1;
