@@ -24,17 +24,16 @@
     <section
         ref="canvasWrapper"
         class="app__canvas-wrapper"
-        :class="{
-            'app__canvas-wrapper--expanded': !collapseMenu
-        }"
     >
         <div
             ref="canvasContainer"
             class="app__canvas"
+            :class="{
+                'app__canvas--expanded': !collapseMenu
+            }"
         >
             <div v-if="!hasImage" class="app__file-upload">
                 <div
-                    v-if="!hasImage"
                     v-t="'main.fileSelectExplanation'"
                     class="app__image-placeholder"
                     @click="openFileSelector()"
@@ -258,10 +257,7 @@ export default {
             }
         },
         handleResize(): void {
-            const availableBounds = this.$refs.canvasWrapper.getBoundingClientRect();
-            const scaledValue = Math.min( MAX_IMAGE_SIZE, Math.floor( availableBounds.height * 0.9 ));
-
-            this.updateSettingDimensions( scaledValue, scaledValue );
+            this.updateSettingDimensions( MAX_IMAGE_SIZE, MAX_IMAGE_SIZE );
         },
         saveImage(): void {
             // this.runFilter( true ); // only if we want to apply onto the (large) original image
@@ -294,6 +290,7 @@ export default {
 // set global styles (typography, page layout, etc.)
 // beyond this point all styling should be scoped
 @import "@/styles/_global";
+@import "@/styles/_mixins";
 @import "floating-vue/dist/style.css";
 
 #app {
@@ -304,8 +301,10 @@ export default {
 }
 
 .app__canvas canvas {
-    box-shadow: 0 8px 8px rgba(0,0,0,.5);
+    filter: drop-shadow(0 8px 8px rgba(0,0,0,.5));
     max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 </style>
 
@@ -316,18 +315,6 @@ $sideBarWidth: 370px;
 $bgTileSize: 40px;
 
 .app {
-    &__canvas-wrapper {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        width: 100%;
-        min-height: 100%;
-        background-image:
-            linear-gradient( to bottom, transparent 99%, #000 100% ),
-            linear-gradient( to right, #444 99%, #000 100% );
-        background-size: $bgTileSize $bgTileSize;
-    }
-
     &__title {
         margin: 0;
     }
@@ -337,21 +324,34 @@ $bgTileSize: 40px;
     }
 
     &__canvas-wrapper {
-        flex: 1;
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        flex-direction: row;
+        width: 100%;
+        height: 100%;
+        background-image:
+            linear-gradient( to bottom, transparent 98%, #000 100% ),
+            linear-gradient( to right, #444 98%, #000 100% );
+        background-size: $bgTileSize $bgTileSize;
         overflow: hidden;
 
         @include large() {
             width: calc( 100% - $sideBarWidth );
+            padding: $spacing-xlarge;
+            box-sizing: border-box;
         }
+    }
 
-        &--expanded {
-            @include mobile() {
-                width: 100%;
-                align-items: unset;
+    &__canvas {
+        display: flex;
+        justify-content: space-around;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+
+        @include mobile() {
+            align-items: center;
+
+            &--expanded {
+                align-items: initial;
+                display: initial;
                 padding-top: $spacing-medium;
             }
         }
@@ -448,7 +448,6 @@ $bgTileSize: 40px;
     @include mobile() {
         &__sidebar {
             border-top: 4px solid $color-4;
-            background-color: rgba(0,0,0,.75);
             top: 50%;
             height: 50%;
             
