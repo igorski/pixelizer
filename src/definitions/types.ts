@@ -44,3 +44,7 @@ export type PixelCanvas = Size & {
     canvas: HTMLCanvasElement;
     context: CanvasRenderingContext2D;
 };
+
+export type CachedPixelCanvas = PixelCanvas & {
+    data: ImageData;
+};

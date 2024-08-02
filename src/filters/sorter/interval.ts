@@ -22,7 +22,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import { PixelCanvas } from "@/definitions/types";
+import { CachedPixelCanvas } from "@/definitions/types";
 import { findEdges } from "@/filters/edges";
 import { lightness } from "@/filters/sorter/sorting";
 import { getPixel } from "@/utils/canvas";
@@ -39,7 +39,7 @@ export enum IntervalFunction {
 };
 
 interface IntervalProps {
-    image: PixelCanvas;
+    image: CachedPixelCanvas;
     lowerThreshold: number; // 8-bit value in 0 - 255 range
     upperThreshold: number; // 8-bit value in 0 - 255 range
     charLength: number;
@@ -104,7 +104,7 @@ function random({ image, charLength }: IntervalProps ): IntervalList {
 function threshold({ image, lowerThreshold, upperThreshold }: IntervalProps ): IntervalList {
     const { width, height } = image;
     const intervals: IntervalList = [];
-    const imageData = image.context.getImageData( 0, 0, width, height );
+    const imageData = image.data;
 
     for ( let y = 0; y < height; ++y ) {
         intervals.push( [] );

@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 import type { Size } from "zcanvas";
-import type { PixelCanvas, Pixel } from "@/definitions/types";
+import type { CachedPixelCanvas, PixelCanvas, Pixel } from "@/definitions/types";
 
 let instanceId = 0;
 
@@ -51,6 +51,17 @@ export const cloneCanvas = ( canvas: PixelCanvas ): PixelCanvas => {
     output.context.drawImage( canvas.canvas, 0, 0 );
 
     return output;
+};
+
+/**
+ * Enriches a PixelCanvas with a cached reference to its ImageData contents
+ * This overcomes expensive calls when the canvas is expected to have multiple reads
+ * Do not use on Canvases where the content is replaced
+ */
+export const cacheCanvas = ( canvas: PixelCanvas ): CachedPixelCanvas => {
+    const output = canvas as CachedPixelCanvas;
+    output.data = canvas.context.getImageData( 0, 0, canvas.width, canvas.height );
+    return output;   
 };
 
 export const cropCanvas = ( canvas: PixelCanvas, width: number, height: number, crisp = false ): PixelCanvas => {
@@ -121,7 +132,7 @@ export const canvasToFile = ( canvas: HTMLCanvasElement, fileName: string, scale
     downloadLink.click();
 };
 
-export const resizeImage = ( image: HTMLImageElement | HTMLCanvasElement | ImageBitmap, width?: number, height?: number ): PixelCanvas => {
+export const resizeCanvas = ( image: HTMLImageElement | HTMLCanvasElement | ImageBitmap, width?: number, height?: number ): PixelCanvas => {
     width  = width  ?? image.width;
     height = height ?? image.height;
 

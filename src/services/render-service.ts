@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import type { PixelCanvas, SortSettings } from "@/definitions/types";
+import type { PixelCanvas, CachedPixelCanvas, SortSettings } from "@/definitions/types";
 import { pixelsort } from "@/filters/pixel-sorter";
 
 type RenderResult = Promise<PixelCanvas | undefined>;
@@ -39,7 +39,7 @@ let nextRender: DelayedRender | undefined;
  * to be executed once the previous request has finished. In the case multiple render requests come in
  * the older ones will be rejected (as their state is no longer relevant with a newer request having come in).
  */
-export const applyFilters = async ( image: PixelCanvas, sortSettings: SortSettings, maskImage?: PixelCanvas ): RenderResult => {
+export const applyFilters = async ( image: CachedPixelCanvas, sortSettings: SortSettings, maskImage?: CachedPixelCanvas ): RenderResult => {
     const { width, height, ...settings } = sortSettings;
 
     if ( renderPending ) {
@@ -69,7 +69,7 @@ export const applyFilters = async ( image: PixelCanvas, sortSettings: SortSettin
 
 /* internal methods */
 
-function enqueueRender( image: PixelCanvas, sortSettings: SortSettings, maskImage: PixelCanvas ): RenderResult {
+function enqueueRender( image: CachedPixelCanvas, sortSettings: SortSettings, maskImage: CachedPixelCanvas ): RenderResult {
     if ( nextRender ) {
         nextRender.reject(); // discard previously enqueued render
     }

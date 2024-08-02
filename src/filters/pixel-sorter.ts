@@ -23,18 +23,18 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 import type { Size } from "zcanvas";
-import type { PixelCanvas, PixelList } from "@/definitions/types";
+import type { CachedPixelCanvas, PixelCanvas, PixelList } from "@/definitions/types";
 import { applyThreshold } from "@/filters/threshold";
 import { getCachedRotation, setCachedRotation, getCachedMask, setCachedMask } from "@/filters/sorter/cache";
 import { getIntervals, IntervalFunction } from "@/filters/sorter/interval";
 import { sortImage } from "@/filters/sorter/sorter";
 import { getSortingFunctionByType, SortingType } from "@/filters/sorter/sorting";
-import { createCanvas, cloneCanvas, cropCanvas, rotateCanvas, getPixel, setPixel, hasPixel } from "@/utils/canvas";
+import { createCanvas, cacheCanvas, cloneCanvas, cropCanvas, rotateCanvas, getPixel, setPixel, hasPixel } from "@/utils/canvas";
 import { prepare, waitWhenBusy } from "@/utils/rafDebounce";
 
 interface PixelSortParams {
-    image: PixelCanvas;
-    maskImage?: PixelCanvas;
+    image: CachedPixelCanvas;
+    maskImage?: CachedPixelCanvas;
     randomness?: number; // normalized 0 - 1 range
     charLength?: number; // normalized 0 - 1 range
     lowerThreshold?: number; // normalized 0 - 1 range
@@ -75,27 +75,24 @@ export const pixelsort = async ({ image, maskImage, randomness = 0, charLength =
         if ( cached ) {
             image = cached;
         } else {
-            image = rotateCanvas( cloneCanvas( image ), angle );
+            image = cacheCanvas( rotateCanvas( cloneCanvas( image ), angle ));
             setCachedRotation( id, angle, image );
         }
     }
     const { width, height } = image;
     const size = { width, height };
-
-    const imageData  = image.context.getImageData( 0, 0, width, height );
-
+    
     const maskSourceId = maskImage?.id ?? image.id;
     const cachedMask   = getCachedMask( maskSourceId );
 
     if ( cachedMask ) {
         maskImage = cachedMask;
     } else {
-        maskImage = applyThreshold( maskImage ?? createCanvas( width, height ));
+        maskImage = cacheCanvas( applyThreshold( maskImage ?? createCanvas( width, height )));
 
         setCachedMask( maskSourceId, maskImage );
     }
-    const maskData = maskImage.context.getImageData( 0, 0, maskImage.width, maskImage.height );
-
+    
     await waitWhenBusy(); // wait in case previous executions have exceeded the time budget
     
     // scale values
@@ -114,8 +111,8 @@ export const pixelsort = async ({ image, maskImage, randomness = 0, charLength =
 
     const sortedPixels = sortImage({
         size,
-        imageData,
-        maskData,
+        imageData: image.data,
+        maskData: maskImage.data,
         intervals,
         randomness,
         sortingFunction: getSortingFunctionByType( sortingType )
@@ -125,9 +122,9 @@ export const pixelsort = async ({ image, maskImage, randomness = 0, charLength =
 
     let output = placePixels(
         sortedPixels,
-        imageData,
+        image.data,
         size,
-        maskData,
+        maskImage.data,
     );
     
     if ( hasRotation ) {

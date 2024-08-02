@@ -20,11 +20,11 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import type { PixelCanvas } from "@/definitions/types";
+import type { CachedPixelCanvas } from "@/definitions/types";
 
 type Cache = {
-    rotation: Record<string, PixelCanvas>;
-    mask: Record<string, PixelCanvas>;
+    rotation: Record<string, CachedPixelCanvas>;
+    mask: Record<string, CachedPixelCanvas>;
 };
 
 const canvasCache: Cache = {
@@ -32,21 +32,21 @@ const canvasCache: Cache = {
     mask: {},
 };
 
-export const getCachedRotation = ( id: string, angle: number ): PixelCanvas | undefined => {
+export const getCachedRotation = ( id: string, angle: number ): CachedPixelCanvas | undefined => {
     const key = `${id}_${angle}`;
     return canvasCache.rotation[ key ];
 };
 
-export const setCachedRotation = ( id: string, angle: number, canvas: PixelCanvas ): void => {
+export const setCachedRotation = ( id: string, angle: number, canvas: CachedPixelCanvas ): void => {
     const key = `${id}_${angle}`;
     canvasCache.rotation[ key ] = canvas;
 };
 
-export const getCachedMask = ( id: string ): PixelCanvas | undefined => {
+export const getCachedMask = ( id: string ): CachedPixelCanvas | undefined => {
     return canvasCache.mask[ id ];
 };
 
-export const setCachedMask = ( id: string, canvas: PixelCanvas ): void => {
+export const setCachedMask = ( id: string, canvas: CachedPixelCanvas ): void => {
     canvasCache.mask[ id ] = canvas;
 };
 
