@@ -26,10 +26,10 @@ import type { IntervalFunction } from "@/filters/sorter/interval";
 
 export const settingToString = ( setting: SortSettings ): string => {
     const { width, height, angle, randomness, charLength, lowerThreshold, upperThreshold, sortingType, intervalFunction } = setting;
-    return `a${angle}_l${lowerThreshold.toFixed(2)}_u${upperThreshold.toFixed(2)}_r${randomness.toFixed(2)}_s${sortingType}_i${intervalFunction}_c${charLength.toFixed(2)}_w${width}_h${height}`;
+return `a${angle}_l${lowerThreshold.toFixed(2)}_u${upperThreshold.toFixed(2)}_r${randomness.toFixed(2)}_s${sortingType}_i${intervalFunction}_c${charLength.toFixed(2)}`;
 };
 
-export const stringToSetting = ( string: string ): SortSettings => {
+export const stringToSetting = ( string: string ): Omit<SortSettings, "width" | "height"> => {
     const arr = string.split( "_" );
 
     return {
@@ -39,8 +39,6 @@ export const stringToSetting = ( string: string ): SortSettings => {
         randomness: parseFloat( arr[ 3 ].substring( 1 )),
         sortingType: arr[ 4 ].substring( 1 ) as SortingType,
         intervalFunction: arr[ 5 ].substring( 1 ) as IntervalFunction,
-        charLength: parseFloat( arr[ 6 ].substring( 1 )),
-        width: parseFloat( arr[ 7 ].substring( 1 )),
-        height: parseFloat( arr[ 8 ].substring( 1 )),
+        charLength: parseFloat( arr[ 6 ].substring( 1 ))
     };
 };

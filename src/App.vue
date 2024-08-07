@@ -267,7 +267,11 @@ export default {
             this.runFilter();
         },
         downloadImage(): void {
-            canvasToFile( canvas, `${this.fileName}_${settingToString(this.settings)}_.png`, window.devicePixelRatio );
+            canvasToFile(
+                canvas!, `${this.fileName}_${settingToString(this.settings)}_.png`,
+                // canvas!.width * devicePixelRatio, canvas!.height * devicePixelRatio
+                Math.max( canvas!.width, loadedImage.width ), Math.max( canvas!.height, loadedImage.height )
+            );
         },
         importMask(): void {
             this.setImportAsMask( true );
@@ -433,7 +437,7 @@ $bgTileSize: 40px;
     @include large() {
         &__sidebar {
             width: $sideBarWidth;
-            border-left: 4px solid $color-4;
+            border-left: 6px solid $color-4;
         
             &__collapse-btn {
                 display: none;

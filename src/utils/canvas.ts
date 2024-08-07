@@ -70,7 +70,6 @@ export const cropCanvas = ( canvas: PixelCanvas, width: number, height: number, 
     if ( crisp ) {
         removeAntiAlias( output.canvas, output.context );
     }
-
     const deltaX = canvas.width  / 2 - width / 2;
     const deltaY = canvas.height / 2 - height / 2;
 
@@ -79,13 +78,16 @@ export const cropCanvas = ( canvas: PixelCanvas, width: number, height: number, 
     return output;
 };
 
-export const rotateCanvas = ( canvas: PixelCanvas, angle: number ): PixelCanvas => {
+export const rotateCanvas = ( canvas: PixelCanvas, angle: number, crisp = false ): PixelCanvas => {
     const { width, height } = canvas;
     const angleRad = angle * ( Math.PI / 180 );
 
     const rotatedCanvas  = document.createElement( "canvas" );
     const rotatedContext = rotatedCanvas.getContext( "2d", { willReadFrequently: true })!;
 
+    if ( crisp ) {
+        removeAntiAlias( rotatedCanvas, rotatedContext );
+    }
     const rotatedWidth  = Math.round( Math.abs( width  * Math.cos( angleRad )) + Math.abs( height * Math.sin( angleRad )));
     const rotatedHeight = Math.round( Math.abs( height * Math.cos( angleRad )) + Math.abs( width  * Math.sin( angleRad )));
     
@@ -114,21 +116,15 @@ export const imageToCanvas = ( image: { size: Size, image: HTMLImageElement } ):
     return canvas;
 };
 
-export const canvasToFile = ( canvas: HTMLCanvasElement, fileName: string, scale = 1 ): void => {
-    let source = canvas;
-    if ( scale !== 1 ) {
-        const width  = canvas.width * scale;
-        const height = canvas.height * scale;
-
-        const scaledCanvas = createCanvas( width, height, true );
-        scaledCanvas.context.drawImage( canvas, 0, 0, canvas.width, canvas.height, 0, 0, width, height );
-
-        source = scaledCanvas.canvas;
-    }
-    const snapshot = source!.toDataURL( "image/png" );
+export const canvasToFile = ( canvas: HTMLCanvasElement, fileName: string, width: number, height: number ): void => {
+    const scaledCanvas = createCanvas( width, height, true );
+    scaledCanvas.context.drawImage( canvas, 0, 0, canvas.width, canvas.height, 0, 0, width, height );
+  
+    const snapshot = scaledCanvas.canvas!.toDataURL( "image/png" );
     const downloadLink = document.createElement( "a" );
     downloadLink.setAttribute( "download", fileName );
     downloadLink.setAttribute( "href", snapshot.replace(/^data:image\/png/, "data:application/octet-stream" ));
+    
     downloadLink.click();
 };
 

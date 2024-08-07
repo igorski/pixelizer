@@ -8,7 +8,7 @@ describe( "String util", () => {
     });
 
     it( "should be able to convert a setting to a string and back again", () => {
-        const setting = createSetting();
+        const { width, height, ...setting } = createSetting();
 
         const stringifiedSetting = settingToString( setting );
 

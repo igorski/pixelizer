@@ -29,7 +29,7 @@ import { getCachedRotation, setCachedRotation, getCachedMask, setCachedMask } fr
 import { getIntervals, IntervalFunction } from "@/filters/sorter/interval";
 import { sortImage } from "@/filters/sorter/sorter";
 import { getSortingFunctionByType, SortingType } from "@/filters/sorter/sorting";
-import { createCanvas, cacheCanvas, cloneCanvas, cropCanvas, rotateCanvas, getPixel, setPixel, hasPixel } from "@/utils/canvas";
+import { createCanvas, cacheCanvas, cropCanvas, rotateCanvas, getPixel, setPixel, hasPixel } from "@/utils/canvas";
 import { prepare, waitWhenBusy } from "@/utils/rafDebounce";
 
 interface PixelSortParams {
@@ -75,7 +75,7 @@ export const pixelsort = async ({ image, maskImage, randomness = 0, charLength =
         if ( cached ) {
             image = cached;
         } else {
-            image = cacheCanvas( rotateCanvas( cloneCanvas( image ), angle ));
+            image = cacheCanvas( rotateCanvas( image, angle ));
             setCachedRotation( id, angle, image );
         }
     }

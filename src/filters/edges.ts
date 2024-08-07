@@ -21,7 +21,6 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 import type { CachedPixelCanvas } from "@/definitions/types";
-import { cloneCanvas } from "@/utils/canvas";
 
 // Sobel operator used for the edge detection https://en.wikipedia.org/wiki/Sobel_operator
 
