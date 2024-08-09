@@ -20,7 +20,6 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import type { CachedPixelCanvas } from "@/definitions/types";
 
 // Sobel operator used for the edge detection https://en.wikipedia.org/wiki/Sobel_operator
 
@@ -40,8 +39,8 @@ const SOBEL_Y = [
  * Create a new bitmap that contains all detected edges found in provided input image.
  * Threshold is an 8-bit value between 0 - 255
  */
-export const findEdges = ( image: CachedPixelCanvas, threshold = 127 ): ImageData => {
-    return createEdgeImageData( image.data, threshold );
+export const findEdges = ( image: ImageData, threshold = 127 ): ImageData => {
+    return createEdgeImageData( image, threshold );
 };
 
 /* internal methods */

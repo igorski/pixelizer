@@ -267,10 +267,14 @@ export default {
             this.runFilter();
         },
         downloadImage(): void {
+            const destWidth  = Math.max( canvas!.width,  loadedImage.width );
+            const destHeight = Math.max( canvas!.height, loadedImage.height );
             canvasToFile(
                 canvas!, `${this.fileName}_${settingToString(this.settings)}_.png`,
-                // canvas!.width * devicePixelRatio, canvas!.height * devicePixelRatio
-                Math.max( canvas!.width, loadedImage.width ), Math.max( canvas!.height, loadedImage.height )
+                destWidth, destHeight,
+                // below alternative makes destination size as close as possible to the original, but
+                // as a multiple of the display size (for easier interpolation of crispness)
+                // destWidth - ( destWidth % canvas!.width ), destHeight - ( destHeight % canvas!.height )
             );
         },
         importMask(): void {

@@ -22,7 +22,6 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import { CachedPixelCanvas } from "@/definitions/types";
 import { findEdges } from "@/filters/edges";
 import { lightness } from "@/filters/sorter/sorting";
 import { getPixel } from "@/utils/canvas";
@@ -39,7 +38,7 @@ export enum IntervalFunction {
 };
 
 interface IntervalProps {
-    image: CachedPixelCanvas;
+    image: ImageData;
     lowerThreshold: number; // 8-bit value in 0 - 255 range
     upperThreshold: number; // 8-bit value in 0 - 255 range
     charLength: number;
@@ -104,12 +103,11 @@ function random({ image, charLength }: IntervalProps ): IntervalList {
 function threshold({ image, lowerThreshold, upperThreshold }: IntervalProps ): IntervalList {
     const { width, height } = image;
     const intervals: IntervalList = [];
-    const imageData = image.data;
 
     for ( let y = 0; y < height; ++y ) {
         intervals.push( [] );
         for ( let x = 0; x < width; ++x ) {
-            const level = lightness( getPixel( imageData, x, y ));
+            const level = lightness( getPixel( image, x, y ));
             if ( level < lowerThreshold || level > upperThreshold ) {
                 intervals[ y ].push( x );
             }

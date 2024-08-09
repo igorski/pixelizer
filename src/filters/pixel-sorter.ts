@@ -2,8 +2,6 @@
  * The MIT License (MIT)
  *
  * Igor Zinken 2024 - https://www.igorski.nl
- * Satyarth Mishra Sharma - https://github.com/satyarth/pixelsort
- * Kim Asendorf - https://github.com/kimasendorf/ASDFPixelSort 
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -23,14 +21,15 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 import type { Size } from "zcanvas";
-import type { CachedPixelCanvas, PixelCanvas, PixelList } from "@/definitions/types";
+import type { CachedPixelCanvas, PixelCanvas } from "@/definitions/types";
 import { applyThreshold } from "@/filters/threshold";
 import { getCachedRotation, setCachedRotation, getCachedMask, setCachedMask } from "@/filters/sorter/cache";
-import { getIntervals, IntervalFunction } from "@/filters/sorter/interval";
-import { sortImage } from "@/filters/sorter/sorter";
-import { getSortingFunctionByType, SortingType } from "@/filters/sorter/sorting";
-import { createCanvas, cacheCanvas, cropCanvas, rotateCanvas, getPixel, setPixel, hasPixel } from "@/utils/canvas";
+import { IntervalFunction } from "@/filters/sorter/interval";
+import { SortingType } from "@/filters/sorter/sorting";
+import { createCanvas, cacheCanvas, cropCanvas, rotateCanvas } from "@/utils/canvas";
 import { prepare, waitWhenBusy } from "@/utils/rafDebounce";
+// @ts-expect-error TS lint cannot find module but Vite will take care of it
+import FilterWorker from "@/filters/workers/filter.worker?worker";
 
 interface PixelSortParams {
     image: CachedPixelCanvas;
@@ -43,6 +42,17 @@ interface PixelSortParams {
     intervalFunction?: IntervalFunction;
     angle?: number;
 }
+
+type SortingJob = {
+    size: Size;
+    orgSize: Size;
+    angle: number;
+    resolve: ( canvas: PixelCanvas ) => void;
+    reject: ( error: Error ) => void;
+};
+
+let worker: FilterWorker;
+let job: SortingJob | undefined;
 
 /**
  * The main render function.
@@ -62,12 +72,18 @@ export const pixelsort = async ({ image, maskImage, randomness = 0, charLength =
 
     prepare(); // prepares the time budget
 
+    if ( !worker ) {
+        worker = new FilterWorker(); // lazily instantiate the Worker
+        worker.onmessage = handleWorkerMessage;
+    }
+
     const hasRotation = ( angle % 360 ) !== 0;
     const orgSize = {
         width  : image.width,
         height : image.height,
     };
 
+    // TODO : caches should go to worker too??
     if ( hasRotation ) {
         const { id } = image;
         const cached = getCachedRotation( id, angle );
@@ -100,59 +116,63 @@ export const pixelsort = async ({ image, maskImage, randomness = 0, charLength =
     lowerThreshold *= 255;
     upperThreshold *= 255;
     
-    const intervals = getIntervals( intervalFunction, {
-        image,
-        lowerThreshold,
-        upperThreshold,
-        charLength,
+    return new Promise(( resolve, reject ) => {
+        job = {
+            size,
+            orgSize,
+            angle,
+            resolve,
+            reject,
+        };
+
+        worker.postMessage({
+            cmd: "process",
+            data: {
+                image: {
+                    width: image.width,
+                    height: image.height,
+                    data: image.data.data.buffer,
+                },
+                mask: {
+                    width: maskImage.width,
+                    height: maskImage.height,
+                    data: maskImage.data.data.buffer,
+                },
+                lowerThreshold,
+                upperThreshold,
+                charLength,
+                randomness,
+                intervalFunction,
+                sortingType,
+                size,
+            }
+        }, []);// image.data.data.buffer, maskImage.data.data.buffer ]);
     });
-
-    await waitWhenBusy(); // wait in case previous executions have exceeded the time budget
-
-    const sortedPixels = sortImage({
-        size,
-        imageData: image.data,
-        maskData: maskImage.data,
-        intervals,
-        randomness,
-        sortingFunction: getSortingFunctionByType( sortingType )
-    });
-
-    await waitWhenBusy(); // wait in case previous executions have exceeded the time budget
-
-    let output = placePixels(
-        sortedPixels,
-        image.data,
-        size,
-        maskImage.data,
-    );
-    
-    if ( hasRotation ) {
-        output = cropCanvas( rotateCanvas( output, -angle ), orgSize.width, orgSize.height, true );
-    }
-    return output;
 }
 
-function placePixels( pixels: PixelList[], original: ImageData, size: Size, mask: ImageData ): PixelCanvas {
-    const { width, height } = size;
+/* internal methods */
 
-    const output = createCanvas( width, height, true );
-    const outputdata = output.context.getImageData( 0, 0, width, height );
-
-    for ( let y = 0; y < height; ++y ) {
-        let count = 0;
-        for ( let x = 0; x < width; ++x ) {
-            if ( hasPixel( mask, x, y )) {
-                const pixel = pixels[ y ][ count ];
-                pixel && setPixel( outputdata, x, y, pixel );
-                ++count;
-            } else {
-                const pixel = getPixel( original, x, y );
-                pixel && setPixel( outputdata, x, y, pixel );
-            }
-        }
+function handleWorkerMessage({ data }: MessageEvent ): void {
+    if ( job === undefined ) {
+        return;
     }
-    output.context.putImageData( outputdata, 0, 0 );
+    
+    if ( data?.cmd === "result" ) {
+        const { width, height } = job.size;
 
-    return output;
+        let output = createCanvas( width, height, true );
+        output.context.putImageData( new ImageData( new Uint8ClampedArray( data.data ), width, height ), 0, 0 );
+
+        const hasRotation = ( job.angle % 360 ) !== 0;
+
+        if ( hasRotation ) {
+            output = cropCanvas( rotateCanvas( output, -job.angle ), job.orgSize.width, job.orgSize.height, true );
+        }
+        job.resolve( output );
+        job = undefined;
+    }
+    else if ( data?.cmd === "error" ) {
+        job.reject( data.error );
+        job = undefined;
+    }
 }
