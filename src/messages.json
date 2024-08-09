@@ -10,6 +10,13 @@
             "fileSelectExplanation": "Select or drag an image file ( JPG, PNG, GIF, WEBP ) here to get started",
             "privacy": "Your images will load into your browser's memory for this session and will not be uploaded anywhere."
         },
+        "errors": {
+            "unsupportedFile": "Could not open file, it is not of the supported image type"
+        },
+        "notifications": {
+            "openedFile": "Opened file \"{file}\"",
+            "savedFile": "Saved file \"{file}\""
+        },
         "settings": {
             "angle": "Angle",
             "randomness": "Randomness",

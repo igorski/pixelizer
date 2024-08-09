@@ -1,0 +1,176 @@
+/**
+ * The MIT License (MIT)
+ *
+ * Igor Zinken 2019-2024 - https://www.igorski.nl
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+<template>
+    <div class="notifications">
+        <div
+            v-for="( notificationVO, index ) in queue"
+            :key="`notification_${index}`"
+            class="notification__window"
+            :class="{ active: notificationVO.visible, destroyed: notificationVO.destroyed }"
+            @click="closeNotification( notificationVO )"
+        >
+            <div class="notification__window__message">
+                <p class="notification__window__message__text">{{ notificationVO.message }}</p>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script lang="ts">
+import { mapState, mapActions } from "pinia";
+import { useSystemStore } from "@/store/system";
+
+type NotificationVO = {
+    message: string;
+    visible: boolean;
+    destroyed: boolean;
+};
+
+export default {
+    data: () => ({
+        queue: []
+    }),
+    computed: {
+        ...mapState( useSystemStore, [
+            "notifications",
+        ]),
+    },
+    watch: {
+        notifications: {
+            immediate: true,
+            deep: true,
+            handler( value: string[] = []): void {
+                if ( !value.length ) {
+                    return;
+                }
+                value.forEach( notification => {
+                    // create Value Object for the message
+                    const notificationVO = { message: notification, visible: true, destroyed: false };
+                    this.queue.unshift( notificationVO );
+
+                    // auto close after a short delay
+                    window.setTimeout( this.closeNotification.bind( this, notificationVO ), 4000 );
+                });
+                this.clearNotifications();
+            }
+        }
+    },
+    methods: {
+        ...mapActions( useSystemStore, [
+            "clearNotifications",
+        ]),
+        closeNotification( notificationVO: NotificationVO ): void {
+            if ( !notificationVO.visible ) {
+                return;
+            }
+            // triggers 250 millisec close animation (see css)
+            notificationVO.visible = false;
+            window.setTimeout( this.removeNotification.bind( this, notificationVO ), 250 );
+            this.$forceUpdate();
+        },
+        removeNotification( notificationVO: NotificationVO ): void {
+            notificationVO.destroyed = true;
+            // only clear queue once all notifications have been destroyed
+            // (v-for does not guarantee order so clearing when there are multiple notifications
+            // causes weird jumps in remaining notification windows)
+            if ( !this.queue.find( notificationVO => !notificationVO.destroyed )) {
+                this.queue = [];
+            }
+        },
+    }
+};
+</script>
+
+<style lang="scss" scoped>
+@import "@/styles/_mixins";
+
+.notifications {
+    position: fixed;
+    z-index: 2;
+
+    .notification__window {
+        display: block;
+        position: relative;
+        padding: $spacing-small ($spacing-small + $spacing-medium);
+        box-sizing: border-box;
+        margin-bottom: $spacing-small;
+        background-color: $color-sidebar;
+        border: 3px solid #28292d;
+        color: #FFF;
+        transition: 0.25s ease-in-out;
+        cursor: pointer;
+        
+        &.destroyed {
+            display: none;
+        }
+
+        &__message {
+            color: #b6b6b6;
+            margin: $spacing-xsmall 0;
+
+            &__text {
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                margin: 0;
+            }
+        }
+    }
+
+    @include large() {
+        width: auto;
+        max-width: 480px;
+        left: 50%;
+        transform: translate(-50%);
+        bottom: $spacing-medium;
+
+        .notification__window {
+            bottom: -100px;
+
+            &.active {
+                bottom: 0;
+            }
+        }
+    }
+
+    @include mobile() {
+        width: 100%;
+        max-width: 100%;
+        top: 0;
+        left: 0;
+        top: $spacing-medium;
+
+        .notification__window {
+            width: 100%;
+            left: 0;
+            right: auto;
+            padding: $spacing-medium;
+            top: -100px;
+
+            &.active {
+                top: 0;
+            }
+        }
+    }
+}
+</style>

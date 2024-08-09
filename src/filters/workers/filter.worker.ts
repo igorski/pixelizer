@@ -61,12 +61,16 @@ self.addEventListener( "message", ( event: MessageEvent ): void => {
 
                 const { lowerThreshold, upperThreshold, charLength, size, randomness, sortingType, intervalFunction } = data;
 
+                setProgress( 20 );
+
                 const intervals = getIntervals( intervalFunction, {
                     image: imageData,
                     lowerThreshold,
                     upperThreshold,
                     charLength,
                 });
+
+                setProgress( 50 );
         
                 const sortedPixels = sortImage({
                     size,
@@ -76,6 +80,8 @@ self.addEventListener( "message", ( event: MessageEvent ): void => {
                     randomness,
                     sortingFunction: getSortingFunctionByType( sortingType )
                 });
+
+                setProgress( 80 );
     
                 const output = placePixels(
                     sortedPixels,
@@ -83,6 +89,9 @@ self.addEventListener( "message", ( event: MessageEvent ): void => {
                     size,
                     maskData,
                 );
+
+                setProgress( 100 );
+                
                 self.postMessage({ cmd: "result", data: output.data.buffer }, { transfer: [ output.data.buffer ]});
             } catch ( error: unknown ) {
                 self.postMessage({ cmd: "error", error });
@@ -92,6 +101,10 @@ self.addEventListener( "message", ( event: MessageEvent ): void => {
 });
 
 /* internal methods */
+
+function setProgress( value: number ): void {
+    self.postMessage({ cmd: "progress", progress: value });
+}
 
 function placePixels( pixels: PixelList[], original: ImageData, size: Size, mask: ImageData ): ImageData {
     const { width, height } = size;

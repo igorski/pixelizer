@@ -89,7 +89,7 @@
     user-select: none;
 
     @if ( $primary ) {
-        background-color: $color-4;
+        background-color: $color-3;
     } @else {
         background-color: $color-1;
 
@@ -100,7 +100,7 @@
 
     &:hover {
         background-color: #FFF;
-        color: $color-4;
+        color: $color-3;
     }
 
     &:disabled {

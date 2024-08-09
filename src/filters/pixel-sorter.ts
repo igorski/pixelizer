@@ -26,10 +26,11 @@ import { applyThreshold } from "@/filters/threshold";
 import { getCachedRotation, setCachedRotation, getCachedMask, setCachedMask } from "@/filters/sorter/cache";
 import { IntervalFunction } from "@/filters/sorter/interval";
 import { SortingType } from "@/filters/sorter/sorting";
-import { createCanvas, cacheCanvas, cropCanvas, rotateCanvas } from "@/utils/canvas";
-import { prepare, waitWhenBusy } from "@/utils/rafDebounce";
 // @ts-expect-error TS lint cannot find module but Vite will take care of it
 import FilterWorker from "@/filters/workers/filter.worker?worker";
+import { useSystemStore } from "@/store/system";
+import { createCanvas, cacheCanvas, cropCanvas, rotateCanvas } from "@/utils/canvas";
+import { prepare, waitWhenBusy } from "@/utils/rafDebounce";
 
 interface PixelSortParams {
     image: CachedPixelCanvas;
@@ -51,6 +52,7 @@ type SortingJob = {
     reject: ( error: Error ) => void;
 };
 
+let system: ReturnType<typeof useSystemStore>;
 let worker: FilterWorker;
 let job: SortingJob | undefined;
 
@@ -76,6 +78,12 @@ export const pixelsort = async ({ image, maskImage, randomness = 0, charLength =
         worker = new FilterWorker(); // lazily instantiate the Worker
         worker.onmessage = handleWorkerMessage;
     }
+
+    if ( !system ) {
+        system = useSystemStore();
+    }
+    system.setLoading( true );
+    system.setLoadingProgress( 0 );
 
     const hasRotation = ( angle % 360 ) !== 0;
     const orgSize = {
@@ -109,6 +117,7 @@ export const pixelsort = async ({ image, maskImage, randomness = 0, charLength =
         setCachedMask( maskSourceId, maskImage );
     }
     
+    system.setLoadingProgress( 20 );
     await waitWhenBusy(); // wait in case previous executions have exceeded the time budget
     
     // scale values
@@ -156,23 +165,33 @@ function handleWorkerMessage({ data }: MessageEvent ): void {
     if ( job === undefined ) {
         return;
     }
+
+    switch ( data?.cmd ) {
+        default:
+            return;
+
+        case "result":
+            const { width, height } = job.size;
+
+            let output = createCanvas( width, height, true );
+            output.context.putImageData( new ImageData( new Uint8ClampedArray( data.data ), width, height ), 0, 0 );
     
-    if ( data?.cmd === "result" ) {
-        const { width, height } = job.size;
+            const hasRotation = ( job.angle % 360 ) !== 0;
 
-        let output = createCanvas( width, height, true );
-        output.context.putImageData( new ImageData( new Uint8ClampedArray( data.data ), width, height ), 0, 0 );
+            if ( hasRotation ) {
+                output = cropCanvas( rotateCanvas( output, -job.angle ), job.orgSize.width, job.orgSize.height, true );
+            }
+            job.resolve( output );
+            job = undefined;
+            break;
 
-        const hasRotation = ( job.angle % 360 ) !== 0;
+        case "error":
+            job.reject( data.error );
+            job = undefined;
+            break;
 
-        if ( hasRotation ) {
-            output = cropCanvas( rotateCanvas( output, -job.angle ), job.orgSize.width, job.orgSize.height, true );
-        }
-        job.resolve( output );
-        job = undefined;
-    }
-    else if ( data?.cmd === "error" ) {
-        job.reject( data.error );
-        job = undefined;
+        case "progress":
+            system.setLoadingProgress( data.progress );
+            break;
     }
 }

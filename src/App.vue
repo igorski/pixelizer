@@ -41,6 +41,8 @@
                 <p class="app__privacy-explanation" v-t="'main.privacy'"></p>
             </div>
         </div>
+        <ProgressBar />
+        <Notifications />
     </section>
     <div
         class="app__sidebar"
@@ -97,7 +99,9 @@
 import debounce from "lodash.debounce";
 import { mapState, mapActions } from "pinia";
 import { Loader } from "zcanvas";
-import Settings from "@/components/Settings.vue";
+import Notifications from "@/components/notifications/Notifications.vue";
+import ProgressBar from "@/components/progress-bar/ProgressBar.vue";
+import Settings from "@/components/settings/Settings.vue";
 import { EXECUTION_BUDGET, MAX_IMAGE_SIZE, ACCEPTED_IMAGE_TYPES } from "@/definitions/config";
 import type { PixelCanvas, CachedPixelCanvas, SortSettings } from "@/definitions/types";
 import { flushCaches } from "@/filters/sorter/cache";
@@ -105,6 +109,7 @@ import { applyFilters } from "@/services/render-service";
 import { useFileStore } from "@/store/file";
 import { useHistoryStore } from "@/store/history";
 import { useSettingsStore } from "@/store/settings";
+import { useSystemStore } from "@/store/system";
 import { imageToCanvas, canvasToFile, cacheCanvas, resizeCanvas, createCanvasFromPattern } from "@/utils/canvas";
 import { handleFileDrag, handleFileDrop, } from "@/utils/file";
 import { settingToString } from "@/utils/string";
@@ -122,6 +127,8 @@ let lastHeight = 0;
 
 export default {
     components: {
+        Notifications,
+        ProgressBar,
         Settings,
     },
     data: () => ({
@@ -157,7 +164,11 @@ export default {
         window.addEventListener( "dragover", handleFileDrag, false );
         window.addEventListener( "drop", event => {
             const file = handleFileDrop( event );
-            file && this.loadFile( file );
+            if ( file ) {
+                this.loadFile( file );
+            } else {
+                this.showNotification( this.$t( "errors.unsupportedFile" ));
+            }
         }, false );
         
         this.handleResize();
@@ -178,6 +189,9 @@ export default {
         ]),
         ...mapActions( useSettingsStore, [
             "updateSettingDimensions",
+        ]),
+        ...mapActions( useSystemStore, [
+            "showNotification",
         ]),
         openFileSelector(): void {
             // this is just some hackaroni to trigger the file selector from the
@@ -210,6 +224,7 @@ export default {
             } else {
                 loadedImage = imageToCanvas( source );
             }
+            this.showNotification( this.$t( "notifications.openedFile", { file: file.name }));
             this.setFileName( file.name.split( "." )[ 0 ]);
             this.setHasImage( !!loadedImage );
             this.saveState();
@@ -267,15 +282,17 @@ export default {
             this.runFilter();
         },
         downloadImage(): void {
+            const fileName   = `${this.fileName}_${settingToString(this.settings)}_.png`;
             const destWidth  = Math.max( canvas!.width,  loadedImage.width );
             const destHeight = Math.max( canvas!.height, loadedImage.height );
             canvasToFile(
-                canvas!, `${this.fileName}_${settingToString(this.settings)}_.png`,
+                canvas!, fileName,
                 destWidth, destHeight,
                 // below alternative makes destination size as close as possible to the original, but
                 // as a multiple of the display size (for easier interpolation of crispness)
                 // destWidth - ( destWidth % canvas!.width ), destHeight - ( destHeight % canvas!.height )
             );
+            this.showNotification( this.$t( "notifications.savedFile", { file: fileName }));
         },
         importMask(): void {
             this.setImportAsMask( true );
@@ -334,6 +351,7 @@ $bgTileSize: 40px;
     &__canvas-wrapper {
         width: 100%;
         height: 100%;
+        position: relative;
         background-image:
             linear-gradient( to bottom, transparent 98%, #000 100% ),
             linear-gradient( to right, #444 98%, #000 100% );
@@ -375,7 +393,7 @@ $bgTileSize: 40px;
         height: 100%;
         box-sizing: border-box;
         padding: $spacing-medium $spacing-large;
-        background-color: #333;
+        background-color: $color-sidebar;
         user-select: none;
         @include animate(top, 0.25s);
 
@@ -387,7 +405,7 @@ $bgTileSize: 40px;
 
         &__collapse-btn {
             border-radius: 50%;
-            border: 2px solid $color-4;
+            border: 2px solid $color-3;
             color: $color-1;
             background-color: transparent;
             padding: $spacing-small ($spacing-medium - $spacing-xsmall);
@@ -441,7 +459,7 @@ $bgTileSize: 40px;
     @include large() {
         &__sidebar {
             width: $sideBarWidth;
-            border-left: 6px solid $color-4;
+            border-left: 6px solid $color-3;
         
             &__collapse-btn {
                 display: none;
@@ -455,7 +473,7 @@ $bgTileSize: 40px;
 
     @include mobile() {
         &__sidebar {
-            border-top: 4px solid $color-4;
+            border-top: 4px solid $color-3;
             top: 50%;
             height: 50%;
             
