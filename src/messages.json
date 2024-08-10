@@ -11,7 +11,7 @@
             "privacy": "Your images will load into your browser's memory for this session and will not be uploaded anywhere."
         },
         "errors": {
-            "unsupportedFile": "Could not open file, it is not of the supported image type"
+            "unsupportedFile": "Could not open file as it is not of a supported image type"
         },
         "notifications": {
             "openedFile": "Opened file \"{file}\"",

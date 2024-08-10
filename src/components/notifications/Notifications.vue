@@ -138,13 +138,15 @@ export default {
     }
 
     @include large() {
-        width: auto;
-        max-width: 480px;
-        left: 50%;
-        transform: translate(-50%);
+        width: inherit;
+        left: 0;
         bottom: $spacing-medium;
 
         .notification__window {
+            width: auto;
+            max-width: 480px;
+            left: 50%;
+            transform: translate(-50%);
             bottom: -100px;
 
             &.active {
