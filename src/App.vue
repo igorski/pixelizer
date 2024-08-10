@@ -376,9 +376,7 @@ $bgTileSize: 40px;
             align-items: center;
 
             &--expanded {
-                align-items: initial;
-                display: initial;
-                padding-top: $spacing-medium;
+                justify-content: start;
             }
         }
     }

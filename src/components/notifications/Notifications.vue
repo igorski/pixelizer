@@ -158,7 +158,6 @@ export default {
         max-width: 100%;
         top: 0;
         left: 0;
-        top: $spacing-medium;
 
         .notification__window {
             width: 100%;
