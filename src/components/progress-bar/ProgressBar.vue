@@ -57,7 +57,7 @@ export default {
             if ( value === true ) {
                 window.clearTimeout( visibleTimeout );
                 visibleTimeout = window.setTimeout(() => {
-                    this.isVisible = true;
+                    this.isVisible = this.loadingProgress < 80;
                 }, VISIBLE_TIMEOUT );
             } else {
                 window.clearTimeout( visibleTimeout );
