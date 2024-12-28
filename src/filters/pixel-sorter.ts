@@ -22,10 +22,11 @@
  */
 import type { Size } from "zcanvas";
 import type { CachedPixelCanvas, PixelCanvas } from "@/definitions/types";
-import { applyThreshold } from "@/filters/threshold";
+import { applyKaleidoscope } from "@/filters/kaleidoscope";
 import { getCachedRotation, setCachedRotation, getCachedMask, setCachedMask } from "@/filters/sorter/cache";
 import { IntervalFunction } from "@/filters/sorter/interval";
 import { SortingType } from "@/filters/sorter/sorting";
+import { applyThreshold } from "@/filters/threshold";
 // @ts-expect-error TS lint cannot find module but Vite will take care of it
 import FilterWorker from "@/filters/workers/filter.worker?worker";
 import { useSystemStore } from "@/store/system";
@@ -42,6 +43,7 @@ interface PixelSortParams {
     sortingType?: SortingType,
     intervalFunction?: IntervalFunction;
     angle?: number;
+    kaleidoscope?: number; // normalize 0 - 1 range
 }
 
 type SortingJob = {
@@ -70,7 +72,7 @@ let job: SortingJob | undefined;
  */
 export const pixelsort = async ({ image, maskImage, randomness = 0, charLength = 0.5,
     sortingType = SortingType.LIGHTNESS, intervalFunction = IntervalFunction.THRESHOLD,
-    lowerThreshold = 0.25, upperThreshold = 0.8, angle = 0 }: PixelSortParams ): Promise<PixelCanvas> => {
+    lowerThreshold = 0.25, upperThreshold = 0.8, angle = 0, kaleidoscope = 0 }: PixelSortParams ): Promise<PixelCanvas> => {
 
     prepare(); // prepares the time budget
 
@@ -103,6 +105,20 @@ export const pixelsort = async ({ image, maskImage, randomness = 0, charLength =
             setCachedRotation( id, angle, image );
         }
     }
+
+    // TODO : kaleidoscope should be applied conditionally and before first cache
+    // kaleidoscope should probably be a rotation "upsell"
+
+    kaleidoscope = Math.round( kaleidoscope * image.width );
+    const doKaleidoscope = kaleidoscope > 0;
+    console.info("do kaleidoscope:" + doKaleidoscope + " for value:" + kaleidoscope);
+
+    if ( doKaleidoscope ) {
+        image = await applyKaleidoscope({ image, size: kaleidoscope });
+    }
+
+    // E.O. TODO
+
     const { width, height } = image;
     const size = { width, height };
     

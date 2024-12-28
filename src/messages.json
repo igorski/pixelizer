@@ -19,6 +19,7 @@
         },
         "settings": {
             "angle": "Angle",
+            "kaleidoscope": "Kaleidoscope",
             "randomness": "Randomness",
             "lowerThreshold": "Lower threshold",
             "upperThreshold": "Upper threshold",
@@ -30,6 +31,7 @@
             "mask": "Mask",
             "description": {
                 "angle": "Angle (in degrees) determining the sorting direction",
+                "kaleidoscope": "Mirror the fragments of the source image",
                 "quarterTurn": "Rotate in 90 degree increments",
                 "randomness": "Percentage of pixels NOT to sort (0% = fully sorted, 100% = no sorting)",
                 "charLength": "Characteristic length for the randomized width generation",

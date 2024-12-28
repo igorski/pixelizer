@@ -71,6 +71,22 @@
             </div>
             <div class="input-wrapper">
                 <label
+                    for="inputKaleidoscope"
+                    v-t="'settings.kaleidoscope'"
+                    v-tooltip.left="$t('settings.description.kaleidoscope')"
+                ></label>
+                <input
+                    id="inputKaleidoscope"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    v-model.number="internalValue.kaleidoscope"
+                    @change="saveState()"
+                />
+            </div>
+            <div class="input-wrapper">
+                <label
                     for="inputRandom"
                     v-t="'settings.randomness'"
                     v-tooltip.left="$t('settings.description.randomness')"

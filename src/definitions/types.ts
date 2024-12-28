@@ -28,6 +28,7 @@ export interface SortSettings {
     width: number;
     height: number;
     angle: number;
+    kaleidoscope: number; // normalize 0 - 1
     randomness: number; // normalized 0 - 1
     charLength: number; // normalized 0 - 1
     lowerThreshold: number; // normalized 0 - 1

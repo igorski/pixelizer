@@ -36,6 +36,7 @@ export const useSettingsStore = defineStore( "settings", {
             width: MAX_IMAGE_SIZE,
             height: MAX_IMAGE_SIZE,
             angle: 0,
+            kaleidoscope: 0,
             randomness: 0,
             charLength: 0.5,
             lowerThreshold: 0.25,
