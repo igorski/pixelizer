@@ -1,7 +1,7 @@
 {
     "name": "pixelizer",
     "version": "1.0.0",
-    "private": true,
+    "type": "module",
     "scripts": {
         "dev": "vite --force",
         "build": "vite build",
@@ -10,19 +10,19 @@
         "typecheck": "npx -p typescript tsc -p tsconfig.check.json --noEmit"
     },
     "dependencies": {
+        "@simonwep/pickr": "^1.8.0",
         "floating-vue": "^5.2.2",
         "lodash.debounce": "^4.0.8",
         "pinia": "^2.1.7",
-        "vue": "^3.3.4"
+        "vue": "^3.5.13"
     },
     "devDependencies": {
-        "@vitejs/plugin-vue": "^4.2.3",
-        "@vue/compiler-sfc": "^3.0.0",
+        "@vitejs/plugin-vue": "^5.2.1",
         "sass": "^1.51.0",
         "typescript": "^4.7.4",
-        "vite": "^5.4.12",
+        "vite": "^6.0.11",
         "vitest": "^2.1.9",
-        "vite-plugin-static-copy": "^0.13.1",
+        "vite-plugin-static-copy": "^2.2.0",
         "vue-i18n": "^9.2.2",
         "zcanvas": "^6.0.5"
     }

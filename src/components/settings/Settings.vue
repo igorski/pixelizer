@@ -224,32 +224,26 @@
                         />
                     </div>
                     <div class="post-processing__content__sub">
-                        <div class="input-wrapper">
-                            <div class="post-processing__color-preview" :style="{ backgroundColor: internalPostProcValue.duotoneColor1 }" />
+                        <div class="input-wrapper input-wrapper--stretched">
                             <label
                                 for="duotoneColor1"
                                 v-t="'settings.color1'"
                             ></label>
-                            <input
+                            <color-picker
                                 id="duotoneColor1"
-                                type="text"
-                                maxlength="7"
                                 v-model="internalPostProcValue.duotoneColor1"
-                                @change="saveState()"
+                                @update:modelValue="saveState()"
                             />
                         </div>
-                        <div class="input-wrapper">
-                            <div class="post-processing__color-preview" :style="{ backgroundColor: internalPostProcValue.duotoneColor2 }" />
+                        <div class="input-wrapper input-wrapper--stretched">
                             <label
                                 for="duotoneColor2"
                                 v-t="'settings.color2'"
                             ></label>
-                            <input
+                            <color-picker
                                 id="duotoneColor2"
-                                type="text"
-                                maxlength="7"
                                 v-model="internalPostProcValue.duotoneColor2"
-                                @change="saveState()"
+                                @update:modelValue="saveState()"
                             />
                         </div>
                     </div>
@@ -276,6 +270,7 @@
 
 <script lang="ts">
 import { mapState, mapActions } from "pinia";
+import ColorPicker from "@/components/ui/color-picker.vue";
 import type { PostProcessingParams, SortSettings } from "@/definitions/types";
 import { SortingType } from "@/filters/sorter/sorting";
 import { IntervalFunction } from "@/filters/sorter/interval";
@@ -306,6 +301,7 @@ type SelectOption = {
 export default {
     emits: [ "save-image", "save-state", "import-mask", "clear-mask" ],
     components: {
+        ColorPicker,
         SettingsHistory,
     },
     data: () => ({
@@ -433,6 +429,10 @@ $labelWidth: 135px;
         }
     }
 
+    &--stretched {
+        justify-content: stretch;
+    }
+
     label {
         width: $labelWidth;
         cursor: pointer;
@@ -544,14 +544,6 @@ input[type="text"] {
         // &__sub {
         //     padding-left: $spacing-medium;
         // }
-    }
-
-    &__color-preview {
-        margin: $spacing-xxsmall $spacing-small 0 0;
-        height: $spacing-medium;
-        width: ($spacing-medium + $spacing-xsmall);
-        border: 1px solid $color-toggle;
-        border-radius: $spacing-xsmall;
     }
 }
 
