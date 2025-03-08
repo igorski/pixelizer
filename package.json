@@ -23,7 +23,7 @@
         "vite": "^6.0.11",
         "vitest": "^2.1.9",
         "vite-plugin-static-copy": "^2.2.0",
-        "vue-i18n": "^9.2.2",
+        "vue-i18n": "^9.14.3",
         "zcanvas": "^6.0.5"
     }
 }
