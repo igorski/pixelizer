@@ -14,7 +14,7 @@
         "floating-vue": "^5.2.2",
         "lodash.debounce": "^4.0.8",
         "pinia": "^2.1.7",
-        "vue": "^3.5.13"
+        "vue": "^3.5.44"
     },
     "devDependencies": {
         "@vitejs/plugin-vue": "^6.0.7",
@@ -23,7 +23,7 @@
         "vite": "^8.3.5",
         "vitest": "^5.0.5",
         "vite-plugin-static-copy": "^4.1.1",
-        "vue-i18n": "^9.14.3",
+        "vue-i18n": "^11.4.14",
         "zcanvas": "^6.0.5"
     }
 }
