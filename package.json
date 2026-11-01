@@ -20,8 +20,8 @@
         "@vitejs/plugin-vue": "^6.0.7",
         "sass": "^1.51.0",
         "typescript": "^4.7.4",
-        "vite": "^8.1.3",
-        "vitest": "^4.1.9",
+        "vite": "^8.3.5",
+        "vitest": "^5.0.5",
         "vite-plugin-static-copy": "^4.1.1",
         "vue-i18n": "^9.14.3",
         "zcanvas": "^6.0.5"
